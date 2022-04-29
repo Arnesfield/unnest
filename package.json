@@ -14,6 +14,11 @@
   "author": "Jefferson Rylee <rylee.jeff385@gmail.com>",
   "main": "lib/index.js",
   "scripts": {
+    "prebuild": "rimraf lib",
+    "build": "tsc",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "npm run lint -- --fix",
+    "start": "npm run build -- -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
