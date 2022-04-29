@@ -1,0 +1,19 @@
+{
+  "name": "@arnesfield/unnest",
+  "version": "0.0.1",
+  "description": "Flatten nested objects to table rows.",
+  "homepage": "https://github.com/Arnesfield/unnest#readme",
+  "bugs": {
+    "url": "https://github.com/Arnesfield/unnest/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arnesfield/unnest.git"
+  },
+  "license": "MIT",
+  "author": "Jefferson Rylee <rylee.jeff385@gmail.com>",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
