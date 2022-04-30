@@ -10,23 +10,29 @@ export function updateSpans<T extends Record<string, any>>(
 ): Row<T>[] {
   const childRows = Array.from(rows);
   return rows.map(row => {
-    row = { ...row };
+    row = { ...row, cells: { ...row.cells } };
     // change cell references
-    for (const [key, cell] of Object.entries(row)) {
-      (row as Record<string, any>)[key] = { ...cell };
-      delete row[key]?.span;
+    for (const entries of Object.entries(row.cells)) {
+      const key: keyof T = entries[0];
+      const cell: Cell<T> = entries[1];
+      row.cells[key] = { ...cell } as any;
+      delete row.cells[key]?.span;
     }
-    const entries: [string, Cell<T>][] = Object.entries(row);
+    const entries: [keyof T, Cell<T>][] = Object.entries(row.cells);
     childRows.shift();
     // when the next column cell exists,
     // stop incrementing span from that column
-    const stopKeys: string[] = [];
+    const stopKeys: (keyof T)[] = [];
     for (const childRow of childRows) {
+      // stop if not same group
+      if (childRow.group !== row.group) {
+        break;
+      }
       for (const [key, cell] of entries) {
         if (stopKeys.includes(key)) {
           continue;
         }
-        if (childRow[key]) {
+        if (childRow.cells[key]) {
           stopKeys.push(key);
           continue;
         }

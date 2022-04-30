@@ -9,26 +9,35 @@ function toProperty(
     : value;
 }
 
+/** Flatten options. */
+export interface FlattenOptions<T extends Record<string, any>> {
+  /** The nested object to flatten. */
+  data: Record<string, any>;
+  /** The property options to flatten. */
+  props: Property;
+  /** Identifies a collection of related rows. */
+  group?: number;
+  /** The rows array to use. */
+  rows?: Row<T>[];
+}
+
 /**
  * Flatten nested object to table rows.
- * @param data The nested object to flatten.
- * @param props The property options to flatten.
- * @param rows The rows array to use.
+ * @param options The flatten options.
  * @returns The flattened rows.
  */
 export function flatten<T extends Record<string, any>>(
-  data: Record<string, any>,
-  props: Property,
-  rows: Row<T>[] = []
+  options: FlattenOptions<T>
 ): Row<T>[] {
+  const { data, props, group = 0, rows = [] } = options;
   if (rows.length === 0) {
-    rows.push({});
+    rows.push({ group, cells: {} });
   }
   // set data for current row cell
   const currentRow = rows[rows.length - 1];
   if (currentRow) {
     const cell: Cell<T> = { data: data as T };
-    currentRow[props.name as keyof T] = cell as any;
+    currentRow.cells[props.name as keyof T] = cell as any;
   }
   // flatten other properties
   for (const [property, nextProperty] of Object.entries(props)) {
@@ -42,9 +51,14 @@ export function flatten<T extends Record<string, any>>(
       ? [value]
       : [];
     for (const [index, item] of items.entries()) {
-      flatten(item, toProperty(property, nextProperty), rows);
+      flatten({
+        rows,
+        group,
+        data: item,
+        props: toProperty(property, nextProperty)
+      });
       if (index < items.length - 1) {
-        rows.push({});
+        rows.push({ group, cells: {} });
       }
     }
   }

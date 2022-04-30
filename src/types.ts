@@ -15,9 +15,14 @@ export interface Cell<T extends Record<string, any>> {
 }
 
 /** The table row. */
-export type Row<T extends Record<string, any>> = {
-  [Key in keyof T]?: Cell<T[Key]>;
-};
+export interface Row<T extends Record<string, any>> {
+  /** Identifies a collection of related rows. */
+  group: number;
+  /** The row cells. */
+  cells: {
+    [Key in keyof T]?: Cell<T[Key]>;
+  };
+}
 
 /** Row filter values. */
 export type RowFilter<T extends Record<string, any>> = {
@@ -32,7 +37,10 @@ export interface Adjacent<T extends Record<string, any>> {
   previous?: Cell<T>;
 }
 
-export interface Unnest<T extends Record<string, any>> {
+/**
+ * Table with the unnested rows and helper methods.
+ */
+export interface Table<T extends Record<string, any>> {
   /** The unnested table rows. */
   rows: Row<T>[];
   /**
@@ -47,11 +55,6 @@ export interface Unnest<T extends Record<string, any>> {
    * Get the next and previous cell of property.
    * @param property The cell property.
    * @param rowIndex The row index.
-   * @param rows The rows to use.
    */
-  adjacent<P extends keyof T>(
-    property: P,
-    rowIndex: number,
-    rows?: Row<T>[]
-  ): Adjacent<T>;
+  adjacent<P extends keyof T>(property: P, rowIndex: number): Adjacent<T>;
 }
