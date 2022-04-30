@@ -5,24 +5,34 @@ function toProperty(
   value: string | boolean | Property
 ): Property {
   return typeof value !== 'object'
-    ? { $name: typeof value === 'string' ? value : property }
+    ? { name: typeof value === 'string' ? value : property }
     : value;
 }
 
-function flattenData<T extends Record<string, any>>(
-  rows: Row<T>[],
+/**
+ * Flatten nested object to table rows.
+ * @param data The nested object to flatten.
+ * @param props The property options to flatten.
+ * @param rows The rows array to use.
+ * @returns The flattened rows.
+ */
+export function flatten<T extends Record<string, any>>(
   data: Record<string, any>,
-  propertyMap: Property
-): void {
+  props: Property,
+  rows: Row<T>[] = []
+): Row<T>[] {
+  if (rows.length === 0) {
+    rows.push({});
+  }
   // set data for current row cell
   const currentRow = rows[rows.length - 1];
   if (currentRow) {
     const cell: Cell<T> = { data: data as T };
-    currentRow[propertyMap.$name as keyof T] = cell as any;
+    currentRow[props.name as keyof T] = cell as any;
   }
   // flatten other properties
-  for (const [property, nextProperty] of Object.entries(propertyMap)) {
-    if (property === '$name') {
+  for (const [property, nextProperty] of Object.entries(props)) {
+    if (property === 'name') {
       continue;
     }
     const value = data[property];
@@ -32,25 +42,11 @@ function flattenData<T extends Record<string, any>>(
       ? [value]
       : [];
     for (const [index, item] of items.entries()) {
-      flattenData(rows, item, toProperty(property, nextProperty));
+      flatten(item, toProperty(property, nextProperty), rows);
       if (index < items.length - 1) {
         rows.push({});
       }
     }
   }
-}
-
-/**
- * Flatten nested object to table rows.
- * @param data The nested object to flatten.
- * @param property The property options to flatten.
- * @returns The flattened rows.
- */
-export function flatten<T extends Record<string, any>>(
-  data: Record<string, any>,
-  property: Property
-): Row<T>[] {
-  const rows: Row<T>[] = [{}];
-  flattenData(rows, data, property);
   return rows;
 }

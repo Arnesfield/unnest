@@ -1,7 +1,7 @@
 /** Property options to unnest. */
 export interface Property {
   /** The name of the row column. */
-  $name: string;
+  name: string;
   /** Property options. */
   [key: string]: string | boolean | Property;
 }
