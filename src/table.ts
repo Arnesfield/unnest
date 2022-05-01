@@ -33,7 +33,7 @@ export function createTable<T extends Record<string, any>>(
     const filtered = updated.filter(row => {
       return Object.values(row.cells).some(value => value);
     });
-    return updateSpans(filtered);
+    return createTable(filtered);
   };
 
   const adjacent: Table<T>['adjacent'] = <P extends keyof T>(

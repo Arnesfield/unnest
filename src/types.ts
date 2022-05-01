@@ -50,7 +50,7 @@ export interface Table<T extends Record<string, any>> {
    */
   filter(
     callback: (row: Row<T>, index: number, rows: Row<T>[]) => RowFilter<T>
-  ): Row<T>[];
+  ): Table<T>;
   /**
    * Get the next and previous cell of property.
    * @param property The cell property.
