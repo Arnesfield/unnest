@@ -21,7 +21,7 @@ export function flatten<T extends Record<string, any>>(
   // set data for current row cell
   const currentRow = rows[rows.length - 1];
   if (currentRow) {
-    const cell: Cell<T> = { data: data as T };
+    const cell: Cell<T> = { group, data: data as T };
     currentRow.cells[props.name as keyof T] = cell as any;
   }
   // flatten other properties

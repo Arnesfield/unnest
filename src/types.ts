@@ -10,6 +10,8 @@ export interface Property {
 export interface Cell<T extends Record<string, any>> {
   /** Cell data. */
   data: T;
+  /** Identifies a collection of related cells. */
+  group: string | number;
   /** The row `span` value. */
   span?: number;
 }
