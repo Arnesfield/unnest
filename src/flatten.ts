@@ -1,9 +1,6 @@
 import { Cell, Property, Row } from './types';
 
-function toProperty(
-  property: string,
-  value: string | boolean | Property
-): Property {
+function toProperty(property: string, value: string | Property): Property {
   return typeof value !== 'object'
     ? { name: typeof value === 'string' ? value : property }
     : value;
@@ -51,12 +48,8 @@ export function flatten<T extends Record<string, any>>(
       ? [value]
       : [];
     for (const [index, item] of items.entries()) {
-      flatten({
-        rows,
-        group,
-        data: item,
-        property: toProperty(property, nextProperty)
-      });
+      const next = toProperty(property, nextProperty);
+      flatten({ rows, group, data: item, property: next });
       if (index < items.length - 1) {
         rows.push({ group, cells: {} });
       }

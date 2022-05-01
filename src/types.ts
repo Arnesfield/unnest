@@ -3,7 +3,7 @@ export interface Property {
   /** The name of the row column. */
   name: string;
   /** Property options. */
-  [key: string]: string | boolean | Property;
+  [key: string]: string | Property;
 }
 
 /** The table cell. */
