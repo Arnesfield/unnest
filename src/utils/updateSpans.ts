@@ -1,4 +1,4 @@
-import { Cell, Row } from './types';
+import { Cell, Row } from '../types';
 
 /**
  * Update row cell `span` values.

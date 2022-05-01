@@ -23,38 +23,3 @@ export interface Row<T extends Record<string, any>> {
     [Key in keyof T]?: Cell<T[Key]>;
   };
 }
-
-/** Row filter values. */
-export type RowFilter<T extends Record<string, any>> = {
-  [Key in keyof T]?: boolean;
-};
-
-/** Adjacent cells. */
-export interface Adjacent<T extends Record<string, any>> {
-  /** The next cell. */
-  next?: Cell<T>;
-  /** The previous cell. */
-  previous?: Cell<T>;
-}
-
-/**
- * Table with the unnested rows and helper methods.
- */
-export interface Table<T extends Record<string, any>> {
-  /** The unnested table rows. */
-  rows(): Row<T>[];
-  /**
-   * Filter rows.
-   * @param callback The filter callback.
-   * @returns The filtered rows.
-   */
-  filter(
-    callback: (row: Row<T>, index: number, rows: Row<T>[]) => RowFilter<T>
-  ): Table<T>;
-  /**
-   * Get the next and previous cell of property.
-   * @param property The cell property.
-   * @param rowIndex The row index.
-   */
-  adjacent<P extends keyof T>(property: P, rowIndex: number): Adjacent<T>;
-}

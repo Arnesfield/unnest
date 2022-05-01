@@ -1,5 +1,3 @@
-export * from './flatten';
-export * from './table';
+export * from './core';
 export * from './types';
-export * from './unnest';
-export { default } from './unnest';
+export { unnest as default } from './core';
