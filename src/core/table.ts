@@ -6,8 +6,8 @@ export type RowFilter<T extends Record<string, any>> = {
   [Key in keyof T]?: boolean;
 };
 
-/** Column cells. */
-export interface Column<T extends Record<string, any>> {
+/** Cell info. */
+export interface CellInfo<T extends Record<string, any>> {
   /** The current cell. */
   current?: Cell<T>;
   /** The previous cell. */
@@ -32,12 +32,12 @@ export interface Table<T extends Record<string, any>> {
     callback: (row: Row<T>, index: number, rows: Row<T>[]) => RowFilter<T>
   ): Table<T>;
   /**
-   * Get the current, previous, and next cell of property if any.
+   * Get the cell info (current, previous, and next cell) at row index if any.
    * @param property The cell property (column).
    * @param rowIndex The row index.
-   * @returns The current, previous, and next cell if any.
+   * @returns The cell info.
    */
-  column<P extends keyof T>(property: P, rowIndex: number): Column<T>;
+  cell<P extends keyof T>(property: P, rowIndex: number): CellInfo<T[P]>;
 }
 
 /**
@@ -74,40 +74,37 @@ export function createTable<T extends Record<string, any>>(
     return createTable(filtered);
   };
 
-  const column: Table<T>['column'] = <P extends keyof T>(
+  const cell: Table<T>['cell'] = <P extends keyof T>(
     property: P,
     rowIndex: number
-  ): Column<T> => {
+  ): CellInfo<T[P]> => {
     const rows = getRows();
     const { length } = rows;
-    // allow -1 to last index + 1 (length)
-    rowIndex = Math.min(length, Math.max(-1, rowIndex));
-    const column: Column<T> = {};
-    const set = (key: keyof Column<T>, index: number) => {
+    const info: CellInfo<T[P]> = {};
+    const set = (key: keyof CellInfo<T>, index: number) => {
       const isValid = index > -1 && index < length;
-      if (isValid && !column[key]) {
-        column[key] = rows[index].cells[property];
+      if (isValid && !info[key]) {
+        info[key] = rows[index].cells[property];
       }
       return isValid;
     };
+    // allow -1 to last index + 1 (length)
+    rowIndex = Math.min(length, Math.max(-1, rowIndex));
     set('current', rowIndex);
     for (let counter = 1; true; counter++) {
       const isPreviousValid = set('previous', rowIndex - counter);
       const isNextValid = set('next', rowIndex + counter);
-      if (
-        (!isNextValid && !isPreviousValid) ||
-        (column.next && column.previous)
-      ) {
+      if ((!isNextValid && !isPreviousValid) || (info.next && info.previous)) {
         break;
       }
     }
-    return column;
+    return info;
   };
 
   const table = {} as Table<T>;
   Object.defineProperties(
     table,
-    createProperties({ rows: getRows, filter, column })
+    createProperties({ rows: getRows, filter, cell })
   );
   return table;
 }
