@@ -9,11 +9,18 @@ import { createProperties } from './utils/createProperties';
 export function createTable<T extends Record<string, any>>(
   rows: Row<T>[]
 ): Table<T> {
-  rows = updateSpans(rows);
+  let spannedRows: Row<T>[] | undefined;
+
+  const getRows: Table<T>['rows'] = () => {
+    if (!spannedRows) {
+      spannedRows = updateSpans(rows);
+    }
+    return spannedRows;
+  };
 
   const filter: Table<T>['filter'] = callback => {
     // create row copy and remove cells from row
-    const updated = rows.map((row, index, array) => {
+    const updated = getRows().map((row, index, array) => {
       const result = callback(row, index, array);
       const newRow = { ...row, cells: { ...row.cells } };
       for (const key in result) {
@@ -33,6 +40,7 @@ export function createTable<T extends Record<string, any>>(
     property: P,
     rowIndex: number
   ): Adjacent<T> => {
+    const rows = getRows();
     const { length } = rows;
     const adjacent: Adjacent<T> = {};
     for (let counter = 1; true; counter++) {
@@ -57,6 +65,9 @@ export function createTable<T extends Record<string, any>>(
   };
 
   const table = {} as Table<T>;
-  Object.defineProperties(table, createProperties({ rows, filter, adjacent }));
+  Object.defineProperties(
+    table,
+    createProperties({ rows: getRows, filter, adjacent })
+  );
   return table;
 }

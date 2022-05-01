@@ -42,7 +42,7 @@ export interface Adjacent<T extends Record<string, any>> {
  */
 export interface Table<T extends Record<string, any>> {
   /** The unnested table rows. */
-  rows: Row<T>[];
+  rows(): Row<T>[];
   /**
    * Filter rows.
    * @param callback The filter callback.
