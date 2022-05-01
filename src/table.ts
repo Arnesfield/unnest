@@ -1,18 +1,6 @@
 import { Row, Table, Adjacent } from './types';
 import { updateSpans } from './updateSpans';
-
-function createProperties(obj: Record<string, any>): PropertyDescriptorMap {
-  const map: PropertyDescriptorMap = {};
-  for (const key in obj) {
-    map[key] = {
-      value: obj[key],
-      writable: false,
-      enumerable: true,
-      configurable: false
-    };
-  }
-  return map;
-}
+import { createProperties } from './utils/createProperties';
 
 /**
  * Wraps the `rows` with helper functions.

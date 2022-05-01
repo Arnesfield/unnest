@@ -14,9 +14,9 @@ export interface FlattenOptions<T extends Record<string, any>> {
   /** The nested object to flatten. */
   data: Record<string, any>;
   /** The property options to flatten. */
-  props: Property;
+  property: Property;
   /** Identifies a collection of related rows. */
-  group?: number;
+  group?: string | number;
   /** The rows array to use. */
   rows?: Row<T>[];
 }
@@ -29,7 +29,7 @@ export interface FlattenOptions<T extends Record<string, any>> {
 export function flatten<T extends Record<string, any>>(
   options: FlattenOptions<T>
 ): Row<T>[] {
-  const { data, props, group = 0, rows = [] } = options;
+  const { data, property: props, group = 0, rows = [] } = options;
   if (rows.length === 0) {
     rows.push({ group, cells: {} });
   }
@@ -55,7 +55,7 @@ export function flatten<T extends Record<string, any>>(
         rows,
         group,
         data: item,
-        props: toProperty(property, nextProperty)
+        property: toProperty(property, nextProperty)
       });
       if (index < items.length - 1) {
         rows.push({ group, cells: {} });

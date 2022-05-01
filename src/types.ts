@@ -17,7 +17,7 @@ export interface Cell<T extends Record<string, any>> {
 /** The table row. */
 export interface Row<T extends Record<string, any>> {
   /** Identifies a collection of related rows. */
-  group: number;
+  group: string | number;
   /** The row cells. */
   cells: {
     [Key in keyof T]?: Cell<T[Key]>;
