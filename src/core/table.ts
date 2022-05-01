@@ -6,12 +6,14 @@ export type RowFilter<T extends Record<string, any>> = {
   [Key in keyof T]?: boolean;
 };
 
-/** Adjacent cells. */
-export interface Adjacent<T extends Record<string, any>> {
-  /** The next cell. */
-  next?: Cell<T>;
+/** Column cells. */
+export interface Column<T extends Record<string, any>> {
+  /** The current cell. */
+  current?: Cell<T>;
   /** The previous cell. */
   previous?: Cell<T>;
+  /** The next cell. */
+  next?: Cell<T>;
 }
 
 /** Table with the unnested rows and helper methods. */
@@ -30,11 +32,12 @@ export interface Table<T extends Record<string, any>> {
     callback: (row: Row<T>, index: number, rows: Row<T>[]) => RowFilter<T>
   ): Table<T>;
   /**
-   * Get the next and previous cell of property.
-   * @param property The cell property.
+   * Get the current, previous, and next cell of property if any.
+   * @param property The cell property (column).
    * @param rowIndex The row index.
+   * @returns The current, previous, and next cell if any.
    */
-  adjacent<P extends keyof T>(property: P, rowIndex: number): Adjacent<T>;
+  column<P extends keyof T>(property: P, rowIndex: number): Column<T>;
 }
 
 /**
@@ -71,38 +74,40 @@ export function createTable<T extends Record<string, any>>(
     return createTable(filtered);
   };
 
-  const adjacent: Table<T>['adjacent'] = <P extends keyof T>(
+  const column: Table<T>['column'] = <P extends keyof T>(
     property: P,
     rowIndex: number
-  ): Adjacent<T> => {
+  ): Column<T> => {
     const rows = getRows();
     const { length } = rows;
-    const adjacent: Adjacent<T> = {};
+    // allow -1 to last index + 1 (length)
+    rowIndex = Math.min(length, Math.max(-1, rowIndex));
+    const column: Column<T> = {};
+    const set = (key: keyof Column<T>, index: number) => {
+      const isValid = index > -1 && index < length;
+      if (isValid && !column[key]) {
+        column[key] = rows[index].cells[property];
+      }
+      return isValid;
+    };
+    set('current', rowIndex);
     for (let counter = 1; true; counter++) {
-      const nextIndex = rowIndex + counter;
-      const previousIndex = rowIndex - counter;
-      const isNextValid = nextIndex > -1 && nextIndex < length;
-      const isPreviousValid = previousIndex > -1 && previousIndex < length;
-      if (!adjacent.next && isNextValid) {
-        adjacent.next = rows[nextIndex].cells[property];
-      }
-      if (!adjacent.previous && isPreviousValid) {
-        adjacent.previous = rows[previousIndex].cells[property];
-      }
+      const isPreviousValid = set('previous', rowIndex - counter);
+      const isNextValid = set('next', rowIndex + counter);
       if (
         (!isNextValid && !isPreviousValid) ||
-        (adjacent.next && adjacent.previous)
+        (column.next && column.previous)
       ) {
         break;
       }
     }
-    return adjacent;
+    return column;
   };
 
   const table = {} as Table<T>;
   Object.defineProperties(
     table,
-    createProperties({ rows: getRows, filter, adjacent })
+    createProperties({ rows: getRows, filter, column })
   );
   return table;
 }
