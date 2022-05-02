@@ -1,10 +1,14 @@
 /** Property options to unnest. */
-export interface Property {
-  /** The name of the row column. */
-  name: string;
+export type Property = {
+  /**
+   * The name of the row column.
+   * Defaults to the property name or `root` for the main object.
+   */
+  name?: string;
+} & {
   /** Property options. */
-  [key: string]: string | Property;
-}
+  [key: string]: string | boolean | Property;
+};
 
 /** The table cell. */
 export interface Cell<T extends Record<string, any>> {
