@@ -8,21 +8,22 @@ import { Cell, Row } from '../types';
 export function updateSpans<T extends Record<string, any>>(
   rows: Row<T>[]
 ): Row<T>[] {
+  type K = keyof T;
   const childRows = Array.from(rows);
   return rows.map(row => {
     row = { ...row, cells: { ...row.cells } };
     // change cell references
-    for (const entries of Object.entries(row.cells)) {
-      const key: keyof T = entries[0];
-      const cell: Cell<T> = entries[1];
-      row.cells[key] = { ...cell } as any;
+    for (const k in row.cells) {
+      const key = k as K;
+      const cell: Cell<T[K]> | undefined = row.cells[key];
+      row.cells[key] = cell && { ...cell };
       delete row.cells[key]?.span;
     }
-    const entries: [keyof T, Cell<T>][] = Object.entries(row.cells);
+    const entries: [K, Cell<T[K]>][] = Object.entries(row.cells);
     childRows.shift();
     // when the next column cell exists,
     // stop incrementing span from that column
-    const stopKeys: (keyof T)[] = [];
+    const stopKeys: K[] = [];
     for (const childRow of childRows) {
       // stop if not same group
       if (childRow.group !== row.group) {
