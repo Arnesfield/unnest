@@ -24,6 +24,11 @@ export interface Table<T extends Record<string, any>> {
    */
   rows(): Row<T>[];
   /**
+   * Get all the cells of the property (column).
+   * @param property The cell property (column).
+   */
+  column<P extends keyof T>(property: P): Cell<T[P]>[];
+  /**
    * Filter rows.
    * @param callback The filter callback.
    * @returns The filtered rows.
@@ -54,6 +59,16 @@ export function createTable<T extends Record<string, any>>(
       spannedRows = updateSpans(rows);
     }
     return spannedRows;
+  };
+
+  const column: Table<T>['column'] = <P extends keyof T>(property: P) => {
+    return getRows().reduce((cells: Cell<T[P]>[], row) => {
+      const cell = row.cells[property];
+      if (cell) {
+        cells.push(cell);
+      }
+      return cells;
+    }, []);
   };
 
   const filter: Table<T>['filter'] = callback => {
@@ -104,7 +119,7 @@ export function createTable<T extends Record<string, any>>(
   const table = {} as Table<T>;
   Object.defineProperties(
     table,
-    createProperties({ rows: getRows, filter, cell })
+    createProperties({ rows: getRows, column, filter, cell })
   );
   return table;
 }
