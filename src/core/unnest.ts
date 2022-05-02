@@ -1,6 +1,6 @@
-import { Property, Row } from '../types';
+import { Property, Row, Table } from '../types';
 import { createProperties, flatten } from '../utils';
-import { createTable, Table } from './table';
+import { createTable } from './table';
 
 /** The unnest object. */
 export interface Unnest<Data extends Record<string, any>> {
