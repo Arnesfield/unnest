@@ -3,32 +3,29 @@ import { createProperties, flatten } from '../utils';
 import { createTable, Table } from './table';
 
 /** The unnest object. */
-export interface Unnest<Schema extends Record<string, any>> {
+export interface Unnest {
   /**
-   * Flattens nested objects to table rows.
-   * @param data The nested object to unnest.
+   * Flatten nested objects to table rows.
    * @param property The property options to unnest.
-   * @param key Returns a unique group ID for related rows. Defaults to the index of the data.
    * @returns The table with unnested rows.
    */
-  data<Data extends Record<string, any>>(
-    data: Data | Data[],
-    property: Property,
-    key?: (item: Data, index: number, items: Data[]) => string | number
-  ): Table<Schema>;
+  by<Schema extends Record<string, any>>(property: Property): Table<Schema>;
 }
 
 /**
  * Creates the method to unnest nested objects.
+ * @param data The nested object to unnest.
+ * @param key Returns a unique group ID for related rows. Defaults to the index of the data.
  * @returns The unnest object.
  * @example
- * const table = unnest<TableSchema>().data<ItemType>(items, property);
+ * const table = unnest<Item>(items).by<Schema>(property);
  */
-export function unnest<Schema extends Record<string, any>>(): Unnest<Schema> {
-  const data: Unnest<Schema>['data'] = <Data extends Record<string, any>>(
-    data: Data | Data[],
-    property: Property,
-    key?: (item: Data, index: number, items: Data[]) => string
+export function unnest<Data extends Record<string, any>>(
+  data: Data | Data[],
+  key?: (item: Data, index: number, items: Data[]) => string
+): Unnest {
+  const by: Unnest['by'] = <Schema extends Record<string, any>>(
+    property: Property
   ): Table<Schema> => {
     const items = Array.isArray(data) ? data : [data];
     const rows2d = items.map((item, index, array) => {
@@ -39,7 +36,7 @@ export function unnest<Schema extends Record<string, any>>(): Unnest<Schema> {
     return createTable<Schema>(rows);
   };
 
-  const unnest = {} as Unnest<Schema>;
-  Object.defineProperties(unnest, createProperties({ data }));
+  const unnest = {} as Unnest;
+  Object.defineProperties(unnest, createProperties({ by }));
   return unnest;
 }
