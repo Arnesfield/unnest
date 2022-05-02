@@ -1,4 +1,4 @@
-import { Cell, Property, Row } from '../types';
+import { Cell, Property, PropertyValue, Row } from '../types';
 
 /**
  * Flatten nested object to table rows.
@@ -9,13 +9,17 @@ import { Cell, Property, Row } from '../types';
  * @param rows The rows array to use.
  * @returns The flattened rows.
  */
-export function flatten<T extends Record<string, any>>(
+export function flatten<
+  T extends Record<string, any>,
+  D extends Record<string, any>
+>(
   data: Record<string, any>,
-  props: Property,
+  props: Property<D>,
   group: string | number = 0,
   rows: Row<T>[] = []
 ): Row<T>[] {
   type K = keyof T;
+  type Data = D[keyof D];
   if (rows.length === 0) {
     rows.push({ group, cells: {} });
   }
@@ -27,11 +31,12 @@ export function flatten<T extends Record<string, any>>(
     currentRow.cells[name] = cell;
   }
   // flatten other properties
-  for (const [key, property] of Object.entries(props)) {
+  const entries = Object.entries(props) as [string, PropertyValue<Data>][];
+  for (const [key, property] of entries) {
     if (key === 'name' || (typeof property === 'boolean' && !property)) {
       continue;
     }
-    const value = data[key];
+    const value = data?.[key];
     const items = Array.isArray(value)
       ? value
       : typeof value !== 'undefined' && value !== null
@@ -40,10 +45,12 @@ export function flatten<T extends Record<string, any>>(
     items.forEach((item, index) => {
       // get next property value
       // use key as default name if not provided
-      const next: Property =
+      const next: Property<Data> =
         typeof property === 'object'
           ? { ...property, name: property.name ?? key }
-          : { name: typeof property === 'string' ? property : key };
+          : ({
+              name: typeof property === 'string' ? property : key
+            } as Property<Data>);
       flatten(item, next, group, rows);
       if (index < items.length - 1) {
         rows.push({ group, cells: {} });

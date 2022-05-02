@@ -1,14 +1,21 @@
+/** Get the `Record` type of type `T`. */
+export type ForceRecord<T> = T extends Array<infer U>
+  ? ForceRecord<Exclude<U, null | undefined>>
+  : T extends Record<any, any>
+  ? T
+  : Record<never, never>;
+
+/** Property value */
+export type PropertyValue<T> = string | boolean | Property<ForceRecord<T>>;
+
 /** Property options to unnest. */
-export type Property = {
+export type Property<T extends Record<string, any>> = {
   /**
    * The name of the row column.
    * Defaults to the property name or `root` for the main object.
    */
   name?: string;
-} & {
-  /** Property options. */
-  [key: string]: string | boolean | Property;
-};
+} & Omit<{ [Key in keyof T]?: PropertyValue<T[Key]> }, 'name'>;
 
 /** The table cell. */
 export interface Cell<T extends Record<string, any>> {
