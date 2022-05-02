@@ -73,7 +73,8 @@ export function createTable<T extends Record<string, any>>(
 
   const filter: Table<T>['filter'] = callback => {
     // create row copy and remove cells from row
-    const updated = getRows().map((row, index, array) => {
+    const filtered: Row<T>[] = [];
+    getRows().forEach((row, index, array) => {
       const result = callback(row, index, array);
       const newRow = { ...row, cells: { ...row.cells } };
       for (const key in result) {
@@ -81,10 +82,9 @@ export function createTable<T extends Record<string, any>>(
           delete newRow.cells[key];
         }
       }
-      return newRow;
-    });
-    const filtered = updated.filter(row => {
-      return Object.values(row.cells).some(value => value);
+      if (Object.values(newRow.cells).some(cell => cell)) {
+        filtered.push(newRow);
+      }
     });
     return createTable(filtered);
   };
