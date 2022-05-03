@@ -74,7 +74,7 @@ export interface Table<T extends Record<string, any>> {
    */
   column<P extends keyof T>(property: P): Cell<T[P]>[];
   /**
-   * Get the cell info (current, previous, and next cell) at row index if any.
+   * Get the cell info (current, previous, and next cells) at row index if any.
    * @param property The cell property (column).
    * @param rowIndex The row index.
    * @returns The cell info.
