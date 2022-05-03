@@ -1,5 +1,6 @@
 import { Cell, CellInfo, Row, Table } from '../types';
-import { createProperties, updateSpans } from '../utils';
+import { createProperties } from '../utils';
+import { updateSpans } from './updateSpans';
 
 /**
  * Wraps the `rows` with helper functions.

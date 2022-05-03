@@ -1,3 +1,3 @@
-export * from './core';
 export * from './types';
-export { unnest as default } from './core';
+export * from './core/unnest';
+export { unnest as default } from './core/unnest';

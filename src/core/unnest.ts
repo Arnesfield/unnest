@@ -1,5 +1,6 @@
 import { Property, Row, Table } from '../types';
-import { createProperties, flatten } from '../utils';
+import { createProperties } from '../utils';
+import { flatten } from './flatten';
 import { createTable } from './table';
 
 /** The unnest object. */
