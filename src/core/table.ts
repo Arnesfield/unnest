@@ -85,10 +85,19 @@ export function createTable<T extends Record<string, any>>(
     return createTable(filtered);
   };
 
+  const sort: Table<T>['sort'] = compare => {
+    const rows = getRows();
+    const sorted: Row<T>[] = [];
+    for (const root of roots().sort(compare)) {
+      sorted.push(...rows.filter(row => row.group === root.group));
+    }
+    return createTable(sorted);
+  };
+
   const table = {} as Table<T>;
   Object.defineProperties(
     table,
-    createProperties({ rows: getRows, roots, column, cell, filter })
+    createProperties({ rows: getRows, roots, column, cell, filter, sort })
   );
   return table;
 }

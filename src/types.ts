@@ -83,9 +83,15 @@ export interface Table<T extends Record<string, any>> {
   /**
    * Filter rows.
    * @param callback The filter callback.
-   * @returns The filtered rows.
+   * @returns The table with the filtered rows.
    */
   filter(
     callback: (row: Row<T>, index: number, rows: Row<T>[]) => RowFilter<T>
   ): Table<T>;
+  /**
+   * Sort rows by root rows.
+   * @param compare The compare callback.
+   * @returns The table with the sorted rows.
+   */
+  sort(compare: (a: Row<T>, b: Row<T>) => number): Table<T>;
 }
