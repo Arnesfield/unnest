@@ -1,5 +1,15 @@
 import { Row } from '../types';
 
+/** Render labels. */
+export type RenderLabel<T extends Record<string, any>> = {
+  [K in keyof T]?: string | number | boolean;
+};
+
+/** Get label callback. */
+export type GetLabelCallback<T extends Record<string, any>> = (
+  row: Row<T>
+) => RenderLabel<T>;
+
 /**
  * Render rows as a Markdown table string.
  * @param rows The rows to render.
@@ -8,17 +18,40 @@ import { Row } from '../types';
  */
 export function render<T extends Record<string, any>>(
   rows: Row<T>[],
-  getLabel: (row: Row<T>) => { [K in keyof T]?: string }
+  getLabel: GetLabelCallback<T>
+): string;
+
+/**
+ * Render rows as a Markdown table string.
+ * @param rows The rows to render.
+ * @param columns The default columns to display.
+ * @param getLabel Callback that returns the labels to display.
+ * @returns The rows as Markdown table string.
+ */
+export function render<T extends Record<string, any>>(
+  rows: Row<T>[],
+  columns: (keyof T)[],
+  getLabel: GetLabelCallback<T>
+): string;
+
+export function render<T extends Record<string, any>>(
+  rows: Row<T>[],
+  columns: (keyof T)[] | GetLabelCallback<T>,
+  getLabel: GetLabelCallback<T> = () => ({})
 ): string {
+  if (typeof columns === 'function') {
+    getLabel = columns;
+    columns = [];
+  }
   const pipe = (value: string[]) => `| ${value.join(' | ')} |`;
 
   const headers = rows.reduce((keys: (keyof T)[], row) => {
     keys.push(...Object.keys(row.cells).filter(key => !keys.includes(key)));
     return keys;
-  }, []);
+  }, columns);
 
   const max: { [K in keyof T]?: number } = {};
-  const labels: { [K in keyof T]?: string }[] = [];
+  const labels: RenderLabel<T>[] = [];
   for (const row of rows) {
     // get label and max length per column
     const label = getLabel(row);
@@ -27,7 +60,7 @@ export function render<T extends Record<string, any>>(
       const value = label[header];
       max[header] = Math.max(
         max[header] || 0,
-        value?.length || 0,
+        value?.toString().length || 0,
         header.toString().length
       );
     }
@@ -36,8 +69,12 @@ export function render<T extends Record<string, any>>(
   const body = labels
     .map(label => {
       const cells = headers.map(header => {
-        const value: string = label[header] || '';
-        return value.padEnd(max[header] || 0);
+        // align right for numbers
+        const pad: number = max[header] || 0;
+        const value: string | number | boolean | undefined = label[header];
+        const method = typeof value === 'number' ? 'padStart' : 'padEnd';
+        const str = (value ?? '').toString();
+        return str[method](pad);
       });
       return pipe(cells);
     })
