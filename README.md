@@ -74,7 +74,7 @@ const table = unnest(data).by(property);
 
 ### `unnest(data).by(property)`
 
-The `property` value is as object that is based on the `data` type. Consider the following interface:
+The `property` value is an object that is based on the `data` type. Consider the following interface:
 
 ```typescript
 interface User {
@@ -94,20 +94,24 @@ The `property` object type may look like the following depending on how you want
 
 ```javascript
 {
-  email: /* ... */,
-  aliases: /* ... */,
+  email: /* string | boolean */,
+  aliases: /* string | boolean */,
   animals: {
     food: {
-      kind: /* ... */,
-      value: /* ... */
+      kind: /* string | boolean */,
+      value: /* string | boolean */
     }
   }
 }
 ```
 
+Each specified property will be included in the `Row` object.
+
 ### Custom Column Name
 
-By default, the property keys are used as the default column name (and `root` is the default for the main object) similar to our example output a while back:
+By default, the property keys are used as the default column name (`root` is the default for the main object) similar to our example output a while back:
+
+> **Tip**: Notice that the column names are `root`, `animals`, and `food`.
 
 | root | animals | food    |
 | ---- | ------- | ------- |
@@ -183,94 +187,97 @@ Using `unnest(data).by(property)` gives you a `Table` object.
 
 The `Table` object contains the rows that have been `unnest`ed, as well as other useful methods.
 
-#### `table.rows([group])`
+- `table.rows([group])`
 
-Get the rows.
+  Get the rows.
+
+  ```javascript
+  // all rows
+  const rows = table.rows();
+  // get and filter rows by `group` value
+  const rowsOfGroup = table.rows(group);
+  ```
+
+- `table.roots()`
+
+  Get the root rows (the main object/s).
+
+  ```javascript
+  const rows = table.roots();
+  ```
+
+- `table.column(property)`
+
+  Get all the cells in the column (property).
+
+  ```javascript
+  // the `treat` property from the previous example
+  const treatCells = table.column('treat');
+  ```
+
+- `table.cell(property, rowIndex)`
+
+  Get the cell info (current, previous, and next cells) at row index if any.
+
+  ```javascript
+  const info = table.cell('treat', 1);
+  console.log(info);
+  ```
+
+  Output:
+
+  ```javascript
+  {
+    current: { data: 'meat', group: 0 },
+    previous: { data: 'fish', group: 0 },
+    next: { data: 'insects', group: 0 }
+  }
+  ```
+
+- `table.filter(callback)`
+
+  Similar to `array.filter(callback)`, but `table.filter(callback)` will return a new `Table` object with the filtered rows.
+
+  The return value of the filter callback is an object with the properties.
+
+  ```javascript
+  const filteredTable = table.filter((row, index, array) => {
+    return {
+      owner: /* true, false, undefined */ true,
+      pet: /* true, false, undefined */ true,
+      treat: /* true, false, undefined */ true
+    };
+  });
+  const filteredRows = filteredTable.rows();
+  ```
+
+- `table.sort(compareFn)`
+
+  Similar to `array.sort(compareFn)`, but only the root rows are used as the arguments for the `compareFn`.
+
+  ```javascript
+  const sortedTable = table.sort((rootRowA, rootRowB) => {
+    return /* number */ -1;
+  });
+  const sortedRows = sortedTable.rows();
+  ```
+
+  By using the root rows as the arguments to compare, the other rows of the same group do not get sorted. Only the entire group is sorted against other groups (e.g. Rows with `group` index `1` precede the rows with `group` index `0`)
+
+  > **Tip**: The methods `table.filter()` and `table.sort()` return a new `Table` object to allow the usage of the `Table` methods on the new filtered/sorted rows instead.
+
+### `render` function
 
 ```javascript
-// all rows
-const rows = table.rows();
-// get and filter rows by `group` value
-const rowsOfGroup = table.rows(group);
+render(rows, getLabelFn);
+render(rows, columns, getLabelFn);
 ```
 
-#### `table.roots()`
-
-Get the root rows (the main object/s).
-
-```javascript
-const rows = table.roots();
-```
-
-#### `table.column(property)`
-
-Get all the cells in the column (property).
-
-```javascript
-// the `treat` property from the previous example
-const treatCells = table.column('treat');
-```
-
-#### `table.cell(property, rowIndex)`
-
-Get the cell info (current, previous, and next cells) at row index if any.
-
-```javascript
-const info = table.cell('treat', 1);
-console.log(info);
-```
-
-Output:
-
-```javascript
-{
-  current: { data: 'meat', group: 0 },
-  previous: { data: 'fish', group: 0 },
-  next: { data: 'insects', group: 0 }
-}
-```
-
-#### `table.filter(callback)`
-
-Similar to `array.filter(callback)`, but `table.filter(callback)` will return a new `Table` object with the filtered rows.
-
-The return value of the filter callback is an object with the properties.
-
-```javascript
-const filteredTable = table.filter((row, index, array) => {
-  return {
-    owner: /* true, false, undefined */ true,
-    pet: /* true, false, undefined */ true,
-    treat: /* true, false, undefined */ true
-  };
-});
-const filteredRows = filteredTable.rows();
-```
-
-#### `table.sort(compareFn)`
-
-Similar to `array.sort(compareFn)`, but only the root rows are used as the arguments for the `compareFn`.
-
-```javascript
-const sortedTable = table.sort((rootRowA, rootRowB) => {
-  return /* number */ -1;
-});
-const sortedRows = sortedTable.rows();
-```
-
-By using the root rows as the arguments to compare, the other rows of the same group do not get sorted. Only the entire group is sorted against other groups (e.g. Rows with `group` index `1` precede the rows with `group` index `0`)
-
-> **Tip**: The methods `table.filter()` and `table.sort()` return a new `Table` object to allow the usage of the `Table` methods on the new filtered/sorted rows instead.
-
-### `render(rows, getLabelFn)`
-
-A small `render` function is included which accepts rows and returns a Markdown table `string`.
+A `render` function is included which accepts rows and returns a Markdown table `string`.
 
 ```javascript
 const { unnest, render } = require('@arnesfield/unnest');
-
 // ...
-
 const tableStr = render(table.rows(), row => {
   // labels per column, defaults to empty string
   return {
