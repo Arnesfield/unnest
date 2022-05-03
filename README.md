@@ -291,3 +291,26 @@ Output:
 |                  |      | meat    |
 |                  | frog | insects |
 ```
+
+You can also pass in default columns to use. With this, you can reorder the columns to display:
+
+```javascript
+const tableStr = render(table.rows(), ['treat', 'owner', 'pet'], row => {
+  return {
+    owner: row.cells.owner?.data.email,
+    pet: row.cells.pet?.data.type,
+    treat: row.cells.treat?.data
+  };
+});
+console.log(tableStr);
+```
+
+Output:
+
+```markdown
+| treat   | owner            | pet  |
+| ------- | ---------------- | ---- |
+| fish    | john.doe@foo.bar | cat  |
+| meat    |                  |      |
+| insects |                  | frog |
+```
