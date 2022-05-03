@@ -33,7 +33,7 @@ export function unnest<Data extends Record<string, any>>(
     const items = Array.isArray(data) ? data : [data];
     const rows2d = items.map((item, index, array) => {
       const group = typeof key === 'function' ? key(item, index, array) : index;
-      return flatten<Schema, Data>(item, property, group);
+      return flatten<Data, Schema>(item, property, group);
     });
     const rows = ([] as Row<Schema>[]).concat(...rows2d);
     return createTable<Schema>(rows);

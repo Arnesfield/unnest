@@ -1,5 +1,5 @@
 /** Get the `Record` type of type `T`. */
-export type ForceRecord<T> = T extends Array<infer U>
+export type ForceRecord<T> = T extends (infer U)[]
   ? ForceRecord<Exclude<U, null | undefined>>
   : T extends Record<any, any>
   ? T

@@ -10,10 +10,10 @@ import { Cell, Property, PropertyValue, Row } from '../types';
  * @returns The flattened rows.
  */
 export function flatten<
-  T extends Record<string, any>,
-  D extends Record<string, any>
+  D extends Record<string, any>,
+  T extends Record<string, any>
 >(
-  data: Record<string, any>,
+  data: D,
   props: Property<D>,
   group: string | number = 0,
   rows: Row<T>[] = []
@@ -21,12 +21,12 @@ export function flatten<
   type K = keyof T;
   type Data = D[keyof D];
   if (rows.length === 0) {
-    rows.push({ group, cells: {} });
+    rows.push({ cells: {}, group });
   }
   // set data for current row cell
   const currentRow = rows[rows.length - 1];
   if (currentRow) {
-    const cell: Cell<T[K]> = { group, data: data as T[K] };
+    const cell: Cell<T[K]> = { data: data as T[K], group };
     const name: K = props.name ?? 'root';
     currentRow.cells[name] = cell;
   }
@@ -53,7 +53,7 @@ export function flatten<
             } as Property<Data>);
       flatten(item, next, group, rows);
       if (index < items.length - 1) {
-        rows.push({ group, cells: {} });
+        rows.push({ cells: {}, group });
       }
     });
   }
