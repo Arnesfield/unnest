@@ -40,24 +40,6 @@ export function createTable<T extends Record<string, any>>(
     }, []);
   };
 
-  const filter: Table<T>['filter'] = callback => {
-    // create row copy and remove cells from row
-    const filtered: Row<T>[] = [];
-    getRows().forEach((row, index, array) => {
-      const result = callback(row, index, array);
-      const newRow = { ...row, cells: { ...row.cells } };
-      for (const key in result) {
-        if (!result[key]) {
-          delete newRow.cells[key];
-        }
-      }
-      if (Object.values(newRow.cells).some(cell => cell)) {
-        filtered.push(newRow);
-      }
-    });
-    return createTable(filtered);
-  };
-
   const cell: Table<T>['cell'] = <P extends keyof T>(
     property: P,
     rowIndex: number
@@ -85,10 +67,28 @@ export function createTable<T extends Record<string, any>>(
     return info;
   };
 
+  const filter: Table<T>['filter'] = callback => {
+    // create row copy and remove cells from row
+    const filtered: Row<T>[] = [];
+    getRows().forEach((row, index, array) => {
+      const result = callback(row, index, array);
+      const newRow = { ...row, cells: { ...row.cells } };
+      for (const key in result) {
+        if (!result[key]) {
+          delete newRow.cells[key];
+        }
+      }
+      if (Object.values(newRow.cells).some(cell => cell)) {
+        filtered.push(newRow);
+      }
+    });
+    return createTable(filtered);
+  };
+
   const table = {} as Table<T>;
   Object.defineProperties(
     table,
-    createProperties({ rows: getRows, roots, column, filter, cell })
+    createProperties({ rows: getRows, roots, column, cell, filter })
   );
   return table;
 }
