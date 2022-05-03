@@ -2,6 +2,21 @@
   "name": "@arnesfield/unnest",
   "version": "0.0.1",
   "description": "Flatten nested objects to table rows.",
+  "keywords": [
+    "unnest",
+    "flat",
+    "flatten",
+    "array",
+    "object",
+    "nested",
+    "nested-object",
+    "table",
+    "tabular",
+    "rows",
+    "cells",
+    "filter",
+    "sort"
+  ],
   "homepage": "https://github.com/Arnesfield/unnest#readme",
   "bugs": {
     "url": "https://github.com/Arnesfield/unnest/issues"
@@ -14,6 +29,9 @@
   "author": "Jefferson Rylee <rylee.jeff385@gmail.com>",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "prebuild": "rimraf lib",
     "build": "tsc",
