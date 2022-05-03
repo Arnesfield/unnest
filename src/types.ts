@@ -63,6 +63,11 @@ export interface Table<T extends Record<string, any>> {
    */
   rows(group?: string | number): Row<T>[];
   /**
+   * Get the root rows.
+   * @returns The root rows.
+   */
+  roots(): Row<T>[];
+  /**
    * Get all the cells of property (column).
    * @param property The cell property (column).
    * @returns The cells of property.

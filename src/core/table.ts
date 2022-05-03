@@ -20,6 +20,16 @@ export function createTable<T extends Record<string, any>>(
       : spannedRows.filter(row => row.group === group);
   };
 
+  const roots: Table<T>['roots'] = () => {
+    const groups: (string | number)[] = [];
+    return getRows().filter(row => {
+      if (!groups.includes(row.group)) {
+        groups.push(row.group);
+        return true;
+      }
+    });
+  };
+
   const column: Table<T>['column'] = <P extends keyof T>(property: P) => {
     return getRows().reduce((cells: Cell<T[P]>[], row) => {
       const cell = row.cells[property];
@@ -78,7 +88,7 @@ export function createTable<T extends Record<string, any>>(
   const table = {} as Table<T>;
   Object.defineProperties(
     table,
-    createProperties({ rows: getRows, column, filter, cell })
+    createProperties({ rows: getRows, roots, column, filter, cell })
   );
   return table;
 }
