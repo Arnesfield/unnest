@@ -1,4 +1,4 @@
-export { unnest as default } from './core/unnest';
-export * from './core/unnest';
-export * from './misc/render';
+export { unnest as default } from './core';
+export * from './core';
+export { render } from './utils';
 export * from './types';

@@ -37,7 +37,7 @@ export function updateSpans<T extends Record<string, any>>(
           stopKeys.push(key);
           continue;
         }
-        if (typeof cell.span === 'undefined') {
+        if (typeof cell.span !== 'number') {
           cell.span = 1;
         }
         cell.span++;
