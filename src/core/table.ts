@@ -11,11 +11,13 @@ export function createTable<T extends Record<string, any>>(
 ): Table<T> {
   let spannedRows: Row<T>[] | undefined;
 
-  const getRows: Table<T>['rows'] = () => {
+  const getRows: Table<T>['rows'] = group => {
     if (!spannedRows) {
       spannedRows = updateSpans(rows);
     }
-    return spannedRows;
+    return typeof group === 'undefined'
+      ? spannedRows
+      : spannedRows.filter(row => row.group === group);
   };
 
   const column: Table<T>['column'] = <P extends keyof T>(property: P) => {
