@@ -15,7 +15,10 @@ export type Property<T extends Record<string, any>> = {
    * Defaults to the property name or `root` for the main object.
    */
   name?: string;
-} & Omit<{ [Key in keyof T]?: PropertyValue<T[Key]> }, 'name'>;
+} & Omit<
+  { [Key in keyof T]?: PropertyValue<Exclude<T[Key], null | undefined>> },
+  'name'
+>;
 
 /** The table cell. */
 export interface Cell<T extends Record<string, any>> {
