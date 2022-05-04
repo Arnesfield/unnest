@@ -13,57 +13,68 @@ function unwrap<T = any>(value: any): T[] {
     : [];
 }
 
+function toProperty(key: string, property: PropertyValue<any>): Property<any> {
+  // use key as default name if not provided
+  return typeof property === 'object'
+    ? { ...property, name: property.name ?? key }
+    : { name: typeof property === 'string' ? property : key };
+}
+
 /**
  * Flatten nested object to table rows.
  * Note that row cell `span` values are not set here.
  * @param data The nested object to flatten.
  * @param props The property options to flatten.
  * @param group Identifies a collection of related rows.
- * @param rows The rows array to use.
  * @returns The flattened rows.
  */
 export function flatten<
   D extends Record<string, any>,
   T extends Record<string, any>
->(
-  data: D,
-  props: Property<D>,
-  group: string | number = 0,
-  rows: Row<T>[] = []
-): Row<T>[] {
+>(data: D, props: Property<D>, group: string | number = 0): Row<T>[] {
   type K = keyof T;
   type Data = D[keyof D];
-  if (rows.length === 0) {
-    rows.push({ cells: {}, group });
-  }
-  // set data for current row cell
-  const currentRow = rows[rows.length - 1];
-  if (currentRow) {
-    const cell: Cell<T[K]> = { data: data as T[K], group };
-    const name: K = props.name ?? 'root';
-    currentRow.cells[name] = cell;
-  }
-  // flatten other properties
-  const entries = Object.entries(props) as [string, PropertyValue<Data>][];
-  for (const [key, property] of entries) {
-    if (key === 'name' || (typeof property === 'boolean' && !property)) {
-      continue;
-    }
-    const items = unwrap(data?.[key]);
-    items.forEach((item, index) => {
-      // get next property value
-      // use key as default name if not provided
-      const next: Property<Data> =
-        typeof property === 'object'
-          ? { ...property, name: property.name ?? key }
-          : ({
-              name: typeof property === 'string' ? property : key
-            } as Property<Data>);
-      flatten(item, next, group, rows);
-      if (index < items.length - 1) {
-        rows.push({ cells: {}, group });
-      }
+  const entries = Object.entries(props).filter(
+    entry => entry[0] !== 'name'
+  ) as [string, PropertyValue<Data>][];
+  if (entries.length === 0) {
+    const rows: Row<T>[] = unwrap(data).map(item => {
+      const name: K = props.name ?? 'root';
+      const row: Row<T> = { cells: {}, group };
+      const cell: Cell<T[K]> = { data: item, group };
+      row.cells[name] = cell;
+      return row;
     });
+    return rows;
   }
-  return rows;
+  const rows2d = entries.map(([key, property]) => {
+    const items = unwrap(data?.[key]);
+    const next = toProperty(key, property);
+    const rows = ([] as Row<T>[]).concat(
+      ...items.map(item => flatten<D, T>(item, next, group))
+    );
+    // add the data to first row
+    if (rows.length === 0) {
+      rows.push({ cells: {}, group });
+    }
+    const name: K = props.name ?? 'root';
+    const cell: Cell<T[K]> = { data: data as T[K], group };
+    rows[0].cells[name] = cell;
+    return rows;
+  });
+  // merge rows2d
+  // get max length of rows2d items
+  const allRows: Row<T>[] = [];
+  const max = Math.max(...rows2d.map(rows => rows.length));
+  for (let index = 0; index < max; index++) {
+    const allCells = rows2d.reduce((allCells: Row<T>['cells'][], rows) => {
+      const cells: Row<T>['cells'] | undefined = rows[index]?.cells;
+      cells && allCells.push(cells);
+      return allCells;
+    }, []);
+    // merge cells
+    const cells: Row<T>['cells'] = Object.assign({}, ...allCells);
+    allRows.push({ cells, group });
+  }
+  return allRows;
 }
