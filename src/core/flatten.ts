@@ -1,4 +1,4 @@
-import { Cell, PropertyOptions, PropertyValue, Row } from '../types';
+import { Cell, Property, Row } from '../types';
 
 /**
  * Recursive wnwrap of `value` array.
@@ -13,16 +13,6 @@ function unwrap<T = any>(value: any): T[] {
     : [];
 }
 
-function toProperty(
-  key: string,
-  property: PropertyValue<any>
-): PropertyOptions<any> {
-  // use key as default name if not provided
-  return typeof property === 'object'
-    ? { ...property, name: property.name ?? key }
-    : { name: typeof property === 'string' ? property : key };
-}
-
 /**
  * Flatten nested object to table rows.
  * Note that row cell `span` values are not set here.
@@ -34,12 +24,12 @@ function toProperty(
 export function flatten<
   D extends Record<string, any>,
   T extends Record<string, any>
->(data: D, props: PropertyOptions<D>, group: string | number = 0): Row<T>[] {
+>(data: D, props: Property<D>, group: string | number = 0): Row<T>[] {
   type K = keyof T;
   type Data = D[keyof D];
   const entries = Object.entries(props).filter(
     entry => entry[0] !== 'name'
-  ) as [string, PropertyValue<Data>][];
+  ) as [string, Property<Data>][];
   if (entries.length === 0) {
     const rows: Row<T>[] = unwrap(data).map(item => {
       const name: K = props.name ?? 'root';
@@ -52,9 +42,8 @@ export function flatten<
   }
   const rows2d = entries.map(([key, property]) => {
     const items = unwrap(data?.[key]);
-    const next = toProperty(key, property);
     const rows = ([] as Row<T>[]).concat(
-      ...items.map(item => flatten<D, T>(item, next, group))
+      ...items.map(item => flatten<D, T>(item, property, group))
     );
     // add the data to first row
     if (rows.length === 0) {
