@@ -1,6 +1,6 @@
 import { PropertyOptions, Row, Table } from '../types';
 import { createProperties, transformProperty } from '../utils';
-import { flatten } from './flatten';
+import { flatten, flatToRows } from './flatten';
 import { createTable } from './table';
 
 /** The unnest object. */
@@ -34,7 +34,8 @@ export function unnest<Data extends Record<string, any>>(
     const items = Array.isArray(data) ? data : [data];
     const rows2d = items.map((item, index, array) => {
       const group = typeof key === 'function' ? key(item, index, array) : index;
-      return flatten<Data, Schema>(item, property, group);
+      const result = flatten<Data, Schema>(item, property);
+      return flatToRows<Schema>(group, result);
     });
     const rows = ([] as Row<Schema>[]).concat(...rows2d);
     return createTable<Schema>(rows);

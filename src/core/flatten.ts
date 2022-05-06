@@ -13,60 +13,77 @@ function unwrap<T = any>(value: any): T[] {
     : [];
 }
 
+/** Flatten result. */
+export type FlattenResult<T extends Record<string, any>> = {
+  [Key in keyof T]?: T[Key];
+};
+
 /**
- * Flatten nested object to table rows.
- * Note that row cell `span` values are not set here.
+ * Convert flattened results to rows.
+ * @param group Identifies a collection of related rows.
+ * @param results The flattened results.
+ * @returns The rows.
+ */
+export function flatToRows<T extends Record<string, any>>(
+  group: Row<T>['group'],
+  results: FlattenResult<T>[]
+): Row<T>[] {
+  type K = keyof T;
+  return results.map(item => {
+    const row: Row<T> = { cells: {}, group };
+    for (const [key, value] of Object.entries(item)) {
+      const cell: Cell<T[K]> = { data: value, group };
+      row.cells[key as K] = cell;
+    }
+    return row;
+  });
+}
+
+/**
+ * Flatten nested object to array of objects.
  * @param data The nested object to flatten.
  * @param props The property options to flatten.
- * @param group Identifies a collection of related rows.
- * @returns The flattened rows.
+ * @returns The flattened results.
  */
 export function flatten<
   D extends Record<string, any>,
   T extends Record<string, any>
->(data: D, props: Property<D>, group: string | number = 0): Row<T>[] {
+>(data: D, props: Property<D>): FlattenResult<T>[] {
   type K = keyof T;
   type Data = D[keyof D];
   const entries = Object.entries(props).filter(
     entry => entry[0] !== 'name'
   ) as [string, Property<Data>][];
   if (entries.length === 0) {
-    const rows: Row<T>[] = unwrap(data).map(item => {
-      const name: K = props.name ?? 'root';
-      const row: Row<T> = { cells: {}, group };
-      const cell: Cell<T[K]> = { data: item, group };
-      row.cells[name] = cell;
-      return row;
+    return unwrap(data).map(item => {
+      return { [props.name]: item } as FlattenResult<T>;
     });
-    return rows;
   }
-  const rows2d = entries.map(([key, property]) => {
+  const results2d = entries.map(([key, property]) => {
     const items = unwrap(data?.[key]);
-    const rows = ([] as Row<T>[]).concat(
-      ...items.map(item => flatten<D, T>(item, property, group))
+    const results = ([] as FlattenResult<T>[]).concat(
+      ...items.map(item => flatten<D, T>(item, property))
     );
-    // add the data to first row
-    if (rows.length === 0) {
-      rows.push({ cells: {}, group });
+    // add the data to first result
+    if (results.length === 0) {
+      results.push({});
     }
-    const name: K = props.name ?? 'root';
-    const cell: Cell<T[K]> = { data: data as T[K], group };
-    rows[0].cells[name] = cell;
-    return rows;
+    results[0][props.name as K] = data as T[K];
+    return results;
   });
-  // merge rows2d
-  // get max length of rows2d items
-  const allRows: Row<T>[] = [];
-  const max = Math.max(...rows2d.map(rows => rows.length));
+  // merge results2d
+  // get max length of results2d items
+  const allResults: FlattenResult<T>[] = [];
+  const max = Math.max(...results2d.map(results => results.length));
   for (let index = 0; index < max; index++) {
-    const allCells = rows2d.reduce((allCells: Row<T>['cells'][], rows) => {
-      const cells: Row<T>['cells'] | undefined = rows[index]?.cells;
-      cells && allCells.push(cells);
-      return allCells;
+    const items = results2d.reduce((items: FlattenResult<T>[], results) => {
+      const result = results[index];
+      result && items.push(result);
+      return items;
     }, []);
-    // merge cells
-    const cells: Row<T>['cells'] = Object.assign({}, ...allCells);
-    allRows.push({ cells, group });
+    // merge results
+    const result: FlattenResult<T> = Object.assign({}, ...items);
+    allResults.push(result);
   }
-  return allRows;
+  return allResults;
 }
