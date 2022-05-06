@@ -1,4 +1,4 @@
-import { Property, Row, Table } from '../types';
+import { PropertyOptions, Row, Table } from '../types';
 import { createProperties } from '../utils';
 import { flatten } from './flatten';
 import { createTable } from './table';
@@ -11,7 +11,7 @@ export interface Unnest<Data extends Record<string, any>> {
    * @returns The table with unnested rows.
    */
   by<Schema extends Record<string, any>>(
-    property: Property<Data>
+    property: PropertyOptions<Data>
   ): Table<Schema>;
 }
 
@@ -28,7 +28,7 @@ export function unnest<Data extends Record<string, any>>(
   key?: (item: Data, index: number, items: Data[]) => string
 ): Unnest<Data> {
   const by: Unnest<Data>['by'] = <Schema extends Record<string, any>>(
-    property: Property<Data>
+    property: PropertyOptions<Data>
   ): Table<Schema> => {
     const items = Array.isArray(data) ? data : [data];
     const rows2d = items.map((item, index, array) => {

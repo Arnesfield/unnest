@@ -1,4 +1,4 @@
-import { Cell, Property, PropertyValue, Row } from '../types';
+import { Cell, PropertyOptions, PropertyValue, Row } from '../types';
 
 /**
  * Recursive wnwrap of `value` array.
@@ -13,7 +13,10 @@ function unwrap<T = any>(value: any): T[] {
     : [];
 }
 
-function toProperty(key: string, property: PropertyValue<any>): Property<any> {
+function toProperty(
+  key: string,
+  property: PropertyValue<any>
+): PropertyOptions<any> {
   // use key as default name if not provided
   return typeof property === 'object'
     ? { ...property, name: property.name ?? key }
@@ -31,7 +34,7 @@ function toProperty(key: string, property: PropertyValue<any>): Property<any> {
 export function flatten<
   D extends Record<string, any>,
   T extends Record<string, any>
->(data: D, props: Property<D>, group: string | number = 0): Row<T>[] {
+>(data: D, props: PropertyOptions<D>, group: string | number = 0): Row<T>[] {
   type K = keyof T;
   type Data = D[keyof D];
   const entries = Object.entries(props).filter(

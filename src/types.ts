@@ -6,10 +6,13 @@ export type ForceRecord<T> = T extends (infer U)[]
   : Record<never, never>;
 
 /** Property value */
-export type PropertyValue<T> = string | boolean | Property<ForceRecord<T>>;
+export type PropertyValue<T> =
+  | string
+  | boolean
+  | PropertyOptions<ForceRecord<T>>;
 
 /** Property options to unnest. */
-export type Property<T extends Record<string, any>> = {
+export type PropertyOptions<T extends Record<string, any>> = {
   /**
    * The name of the row column.
    * Defaults to the property name or `root` for the main object.
@@ -19,6 +22,12 @@ export type Property<T extends Record<string, any>> = {
   { [Key in keyof T]?: PropertyValue<Exclude<T[Key], null | undefined>> },
   'name'
 >;
+
+/** Property. */
+export type Property<T extends Record<string, any>> = {
+  /** The name of the row column. */
+  name: string;
+} & Omit<{ [Key in keyof T]?: Property<T[Key]> }, 'name'>;
 
 /** The table cell. */
 export interface Cell<T extends Record<string, any>> {
