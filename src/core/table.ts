@@ -20,8 +20,9 @@ export function createTable<T extends Record<string, any>>(
       : spannedRows.filter(row => row.group === group);
   };
 
-  const data: Table<T>['data'] = () => {
-    return getRows().map(row => {
+  const data: Table<T>['data'] = (...rows: Row<T>[]) => {
+    rows = rows.length > 0 ? rows : getRows();
+    return rows.map(row => {
       const item: RowData<T> = {};
       for (const key in row.cells) {
         item[key] = row.cells[key]?.data;

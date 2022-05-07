@@ -85,6 +85,12 @@ export interface Table<T extends Record<string, any>> {
    */
   data(): RowData<T>[];
   /**
+   * Transform table rows to row data.
+   * @param rows The rows to convert.
+   * @returns The row data.
+   */
+  data(...rows: Row<T>[]): RowData<T>[];
+  /**
    * Get the root rows.
    * @returns The root rows.
    */
