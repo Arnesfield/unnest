@@ -49,6 +49,11 @@ export interface Row<T extends Record<string, any>> {
   };
 }
 
+/** The row data. */
+export type RowData<T extends Record<string, any>> = {
+  [K in keyof T]?: T[K];
+};
+
 // table
 
 /** Row filter values. */
