@@ -1,7 +1,8 @@
 import { Cell, PropertyOptions, Row, RowData, Table } from '../types';
-import { createProperties, transformProperty } from '../utils';
+import { createProperties } from '../utils';
 import { flatten } from './flatten';
 import { createTable } from './table';
+import { transformProperty } from './transformProperty';
 
 /**
  * Convert row data to table rows.
