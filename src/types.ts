@@ -80,6 +80,11 @@ export interface Table<T extends Record<string, any>> {
    */
   rows(group?: string | number): Row<T>[];
   /**
+   * Get the row data.
+   * @returns The row data.
+   */
+  data(): RowData<T>[];
+  /**
    * Get the root rows.
    * @returns The root rows.
    */

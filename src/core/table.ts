@@ -1,4 +1,4 @@
-import { Cell, CellInfo, Row, Table } from '../types';
+import { Cell, CellInfo, Row, RowData, Table } from '../types';
 import { createProperties } from '../utils';
 import { updateSpans } from './updateSpans';
 
@@ -18,6 +18,16 @@ export function createTable<T extends Record<string, any>>(
     return typeof group === 'undefined'
       ? spannedRows
       : spannedRows.filter(row => row.group === group);
+  };
+
+  const data: Table<T>['data'] = () => {
+    return getRows().map(row => {
+      const item: RowData<T> = {};
+      for (const key in row.cells) {
+        item[key] = row.cells[key]?.data;
+      }
+      return item;
+    });
   };
 
   const roots: Table<T>['roots'] = () => {
@@ -97,7 +107,7 @@ export function createTable<T extends Record<string, any>>(
   const table = {} as Table<T>;
   Object.defineProperties(
     table,
-    createProperties({ rows: getRows, roots, column, cell, filter, sort })
+    createProperties({ rows: getRows, data, roots, column, cell, filter, sort })
   );
   return table;
 }
