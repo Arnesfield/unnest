@@ -6,17 +6,18 @@ function filterProps<T extends Record<string, any>>(
   props: (string | number | symbol)[],
   exclude = false
 ): T[] {
-  const allItems: T[] = [];
   let hasValue = false;
-  const obj: T = {} as T;
+  const obj = {} as T;
+  const allItems: T[] = [];
   for (const prop in object) {
-    if (exclude === props.includes(prop)) {
-      continue;
-    }
     const value = object[prop];
-    if (typeof value !== 'undefined' && value !== null) {
-      obj[prop] = value;
+    if (
+      exclude !== props.includes(prop) &&
+      typeof value !== 'undefined' &&
+      value !== null
+    ) {
       hasValue = true;
+      obj[prop] = value;
     }
   }
   if (hasValue) {
@@ -26,23 +27,14 @@ function filterProps<T extends Record<string, any>>(
 }
 
 export interface Merger<T extends Record<string, any>> {
-  rows(): RowData<T>[];
-  merge(rows: RowData<T>[], conflictProps: (keyof T)[]): void;
+  conflicts(): RowData<T>[];
+  merge(rows: RowData<T>[], conflictProps: (keyof T)[]): RowData<T> | undefined;
 }
 
 export function createMerger<T extends Record<string, any>>(): Merger<T> {
-  let didMergeConflicts = false;
-  const allRows: RowData<T>[] = [];
   const allConflicts: RowData<T>[] = [];
 
-  const rows: Merger<T>['rows'] = () => {
-    // merge conflict items
-    if (!didMergeConflicts) {
-      didMergeConflicts = true;
-      allRows.push(...allConflicts);
-    }
-    return allRows;
-  };
+  const conflicts: Merger<T>['conflicts'] = () => allConflicts;
 
   const merge: Merger<T>['merge'] = (rows, conflictProps) => {
     if (rows.length === 0) {
@@ -70,11 +62,10 @@ export function createMerger<T extends Record<string, any>>(): Merger<T> {
         Object.assign(lastConflict, ...conflicts);
       }
     }
-    // save result
-    allRows.push(mainRow);
+    return mainRow;
   };
 
   const merger = {} as Merger<T>;
-  Object.defineProperties(merger, createProperties({ rows, merge }));
+  Object.defineProperties(merger, createProperties({ merge, conflicts }));
   return merger;
 }

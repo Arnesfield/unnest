@@ -87,6 +87,7 @@ export function flatten<
     return { rows, props: Array.from(set) };
   });
 
+  const allRows: RowData<T>[] = [];
   const merger = createMerger<RowData<T>>();
   for (let index = 0; true; index++) {
     const { rows, conflictProps } = getRowsToMerge(
@@ -98,7 +99,12 @@ export function flatten<
     if (rows.length === 0) {
       break;
     }
-    merger.merge(rows, conflictProps);
+    const mergedRow = merger.merge(rows, conflictProps);
+    if (mergedRow) {
+      allRows.push(mergedRow);
+    }
   }
-  return merger.rows();
+  // save merge conflicts
+  allRows.push(...merger.conflicts());
+  return allRows;
 }
