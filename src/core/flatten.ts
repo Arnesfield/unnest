@@ -1,4 +1,5 @@
-import { Cell, Property, Row, RowData } from '../types';
+import { Property, RowData } from '../types';
+import { createMerger } from './merger';
 
 /**
  * Recursive wnwrap of `value` array.
@@ -11,61 +12,6 @@ function unwrap<T = any>(value: any): T[] {
     : typeof value !== 'undefined' && value !== null
     ? [value]
     : [];
-}
-
-/**
- * Convert row data to table rows.
- * @param group Identifies a collection of related rows.
- * @param items The row data.
- * @returns The table rows.
- */
-export function flatToRows<T extends Record<string, any>>(
-  group: Row<T>['group'],
-  items: RowData<T>[]
-): Row<T>[] {
-  type K = keyof T;
-  return items.map(item => {
-    const row: Row<T> = { cells: {}, group };
-    for (const [key, value] of Object.entries(item)) {
-      const cell: Cell<T[K]> = { data: value, group };
-      row.cells[key as K] = cell;
-    }
-    return row;
-  });
-}
-
-function getProps<T extends Record<string, any>>(items: T[]): (keyof T)[] {
-  const set = new Set<string>();
-  for (const item of items) {
-    for (const key in item) {
-      set.add(key);
-    }
-  }
-  return Array.from(set);
-}
-
-function filterProps<T extends Record<string, any>>(
-  object: T,
-  props: (string | number | symbol)[],
-  exclude = false
-): T[] {
-  const allItems: T[] = [];
-  let hasValue = false;
-  const obj: T = {} as T;
-  for (const prop in object) {
-    if (exclude === props.includes(prop)) {
-      continue;
-    }
-    const value = object[prop];
-    if (typeof value !== 'undefined' && value !== null) {
-      obj[prop] = value;
-      hasValue = true;
-    }
-  }
-  if (hasValue) {
-    allItems.push(obj);
-  }
-  return allItems;
 }
 
 interface PropertyItem<T extends Record<string, any>> {
@@ -97,58 +43,6 @@ function getRowsToMerge<T extends Record<string, any>>(
     }
   }
   return { rows, conflictProps: Array.from(conflictSet) };
-}
-
-interface Merger<T extends Record<string, any>> {
-  rows: () => RowData<T>[];
-  merge: (rows: RowData<T>[], conflictProps: (keyof T)[]) => void;
-}
-
-function createMerger<T extends Record<string, any>>(): Merger<T> {
-  let didMergeConflicts = false;
-  const allRows: RowData<T>[] = [];
-  const allConflicts: RowData<T>[] = [];
-
-  const rows = () => {
-    if (!didMergeConflicts) {
-      didMergeConflicts = true;
-      // merge conflict items
-      allRows.push(...allConflicts);
-    }
-    return allRows;
-  };
-
-  const merge = (rows: RowData<T>[], conflictProps: (keyof T)[]) => {
-    if (rows.length === 0) {
-      return;
-    }
-    // use first item as basis
-    const mainRow: RowData<T> = Object.assign({}, rows.shift());
-    for (const row of rows) {
-      // merge clean row data to mainRow
-      Object.assign(mainRow, ...filterProps(row, conflictProps, true));
-      // get last conflict
-      const conflicts = filterProps(row, conflictProps, false);
-      const lastConflict = allConflicts[allConflicts.length - 1] as
-        | RowData<T>
-        | undefined;
-      // merge but save as new row data if it conflicts with lastConflict
-      if (
-        !lastConflict ||
-        conflicts.some(conflict => {
-          return Object.keys(conflict).some(key => key in lastConflict);
-        })
-      ) {
-        allConflicts.push(...conflicts);
-      } else {
-        Object.assign(lastConflict, ...conflicts);
-      }
-    }
-    // save result
-    allRows.push(mainRow);
-  };
-
-  return { rows, merge };
 }
 
 /**
@@ -183,7 +77,14 @@ export function flatten<
       rows.push({});
     }
     rows[0][property.name as K] = data as T[K];
-    return { rows, props: getProps(rows) };
+    // get keys
+    const set = new Set<string>();
+    for (const row of rows) {
+      for (const key in row) {
+        set.add(key);
+      }
+    }
+    return { rows, props: Array.from(set) };
   });
 
   const merger = createMerger<RowData<T>>();
