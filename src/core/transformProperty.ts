@@ -1,4 +1,5 @@
-import { Property, PropertyOptions, PropertyValue } from '../types';
+import { Property } from '../common.types';
+import { PropertyOptions, PropertyValue } from './unnest.types';
 
 function toProperty(
   key: string,

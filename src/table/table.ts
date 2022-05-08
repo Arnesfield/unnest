@@ -1,5 +1,6 @@
-import { Cell, CellInfo, Row, RowData, Table } from '../types';
+import { Cell, Row, RowData } from '../common.types';
 import { createProperties } from '../utils';
+import { Table, CellInfo } from './table.types';
 import { updateSpans } from './updateSpans';
 
 /**

@@ -1,4 +1,4 @@
-import { RowData } from '../types';
+import { RowData } from '../common.types';
 import { createProperties } from '../utils';
 
 function filterProps<T extends Record<string, any>>(

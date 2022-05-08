@@ -1,4 +1,4 @@
-import { Property, RowData } from '../types';
+import { Property, RowData } from '../common.types';
 import { createMerger } from './merger';
 
 /**

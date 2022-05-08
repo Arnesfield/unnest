@@ -1,4 +1,4 @@
-import { Row } from '../types';
+import { Row } from '../common.types';
 
 /** Render labels. */
 export type RenderLabel<T extends Record<string, any>> = {

@@ -1,8 +1,9 @@
-import { Cell, PropertyOptions, Row, RowData, Table } from '../types';
+import { Cell, Row, RowData } from '../common.types';
+import { flatten } from '../flatten';
+import { createTable, Table } from '../table';
 import { createProperties } from '../utils';
-import { flatten } from './flatten';
-import { createTable } from './table';
 import { transformProperty } from './transformProperty';
+import { PropertyOptions, Unnest } from './unnest.types';
 
 /**
  * Convert row data to table rows.
@@ -23,18 +24,6 @@ function dataToRows<T extends Record<string, any>>(
     }
     return row;
   });
-}
-
-/** The unnest object. */
-export interface Unnest<Data extends Record<string, any>> {
-  /**
-   * Flatten nested objects to table rows.
-   * @param property The property options to unnest.
-   * @returns The table with unnested rows.
-   */
-  by<Schema extends Record<string, any>>(
-    property: PropertyOptions<Data>
-  ): Table<Schema>;
 }
 
 /**
