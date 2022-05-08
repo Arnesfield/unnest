@@ -42,10 +42,13 @@ export function createTable<T extends Record<string, any>>(
     });
   };
 
-  const column: Table<T>['column'] = <P extends keyof T>(property: P) => {
+  const column: Table<T>['column'] = <P extends keyof T>(
+    property: P,
+    group?: string | number
+  ) => {
     return getRows().reduce((cells: Cell<T[P]>[], row) => {
       const cell = row.cells[property];
-      if (cell) {
+      if (cell && (typeof group === 'undefined' || cell.group === group)) {
         cells.push(cell);
       }
       return cells;

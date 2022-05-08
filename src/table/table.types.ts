@@ -42,9 +42,10 @@ export interface Table<T extends Record<string, any>> {
   /**
    * Get all the cells of property (column).
    * @param property The cell property (column).
+   * @param group Filter cells by group.
    * @returns The cells of property.
    */
-  column<P extends keyof T>(property: P): Cell<T[P]>[];
+  column<P extends keyof T>(property: P, group?: string | number): Cell<T[P]>[];
   /**
    * Get the cell info (current, previous, and next cells) at row index if any.
    * @param property The cell property (column).
