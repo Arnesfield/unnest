@@ -4,17 +4,21 @@ Flatten nested objects to table rows.
 
 ```javascript
 const { unnest } = require('@arnesfield/unnest');
-// ...
+```
+
+```javascript
 const table = unnest(items).by(property);
+const rows = table.rows();
+const data = table.data();
 ```
 
 Using `TypeScript`:
 
-> **Tip**: Setting the `Schema` generic type should improve typings for `Row`s and `Cell`s.
-
 ```typescript
 const table: Table<Schema> = unnest(items).by<Schema>(property);
 ```
+
+> **Tip**: Setting the `Schema` generic type should improve typings for `Row`s, `Cell`s, and `RowData`.
 
 ## Installation
 
@@ -22,7 +26,7 @@ const table: Table<Schema> = unnest(items).by<Schema>(property);
 npm install @arnesfield/unnest
 ```
 
-## Example
+## Usage
 
 Here is a basic example of `unnest`ing a nested object:
 
@@ -39,20 +43,34 @@ const user = {
 Use `unnest` to flatten the object:
 
 ```javascript
-const table = unnest(user).by({ animals: { food: true } });
-const rows = table.rows();
-console.log(rows);
+const table = unnest(user).by({
+  animals: {
+    food: true
+  }
+});
 ```
 
-Output:
+> **Tip**: Notice that the structure of the `property` value is similar to the nested object.
+
+The `table` contains the `Row`s or `RowData` of the `unnest`ed object:
+
+```javascript
+// get rows
+const rows = table.rows();
+
+// get data
+const data = table.data();
+```
+
+Output of `table.data()`:
 
 > **Note**: Most of the actual output structure is omitted for brevity.
 
 ```javascript
 [
-  { root: /* user */, animals: /* cat  */, food: /* fish    */ },
-  { /* undefined   */ /* undefined      */ food: /* meat    */ },
-  { /* undefined   */ animals: /* frog */, food: /* insects */ },
+  { root: /* user */, animals: /* cat */,  food: /* fish */    },
+  {                                        food: /* meat */    },
+  {                   animals: /* frog */, food: /* insects */ },
 ]
 ```
 
@@ -64,17 +82,39 @@ Using a table, the result would look something like this:
 |      |         | meat    |
 |      | frog    | insects |
 
-## Usage
+If you're using `TypeScript`, the `Schema` type (similar to `RowData`) would look something like this:
 
-The `unnest` function takes in the data (array or object) and calling `.by()` returns a `table`:
+```typescript
+interface Schema {
+  root: User;
+  animals: Animal;
+  food: Food;
+}
+```
+
+### `unnest` function and `Property`
+
+The `unnest` function takes in the data (array or object) and calling `.by(property)` returns a `table`:
 
 ```javascript
 const table = unnest(data).by(property);
 ```
 
-### `unnest(data).by(property)`
+The `property` value structure is based on the data passed to the `unnest` function.
 
-The `property` value is an object that is based on the `data` type. Consider the following interface:
+```typescript
+type PropertyValue = string | boolean | Property;
+
+interface Property {
+  // name of the property, defaults to the object property key or `root`
+  name?: string;
+
+  // other properties based on the data
+  [property]: PropertyValue;
+}
+```
+
+Consider the following interface:
 
 ```typescript
 interface User {
@@ -87,31 +127,42 @@ interface User {
       value: string[];
     }[];
   }[];
+  groups?: {
+    title: string;
+    members: string[];
+  }[];
 }
 ```
 
-The `property` object type may look like the following depending on how you want to `unnest` the object:
+The `property` value type may look like the following depending on how you want to `unnest` the object:
 
 ```javascript
 {
-  email: /* string | boolean */,
-  aliases: /* string | boolean */,
+  // name: string,
+  email: PropertyValue,
+  aliases: PropertyValue,
   animals: {
+    // name: string,
+    type: PropertyValue,
     food: {
-      kind: /* string | boolean */,
-      value: /* string | boolean */
+      // name: string,
+      kind: PropertyValue,
+      value: PropertyValue
     }
+  },
+  groups: {
+    // name: string,
+    title: PropertyValue,
+    members: PropertyValue
   }
 }
 ```
 
-Each specified property will be included in the `Row` object.
+Each specified property will be included in the `Row` and `RowData` object.
 
-### Custom Column Name
+### Custom Column Name (`property.name`)
 
-By default, the property keys are used as the default column name (`root` is the default for the main object) similar to our example output a while back:
-
-> **Tip**: Notice that the column names are `root`, `animals`, and `food`.
+By default, the object property keys are used as the default column name (`root` is the default for the main object) similar to our example output a while back:
 
 | root | animals | food    |
 | ---- | ------- | ------- |
@@ -119,26 +170,24 @@ By default, the property keys are used as the default column name (`root` is the
 |      |         | meat    |
 |      | frog    | insects |
 
-You can configure your own column names by using `name` for the property, or pass it as the property value:
+Notice that the column names are `root`, `animals`, and `food`.
 
-> **Tip**: See `user` object from the first example.
+You can configure the column names by using the `name` property, or pass it as the property value:
 
 ```javascript
 const table = unnest(user).by({
+  // root -> owner
   name: 'owner',
   animals: {
+    // animals -> pet
     name: 'pet',
+    // food -> treat
     food: 'treat' // can also be `food: { name: 'treat' }`
   }
 });
-console.log(table.rows());
 ```
 
-Output:
-
-Notice that the columns are using the custom names.
-
-> **Note**: Most of the actual output structure is omitted for brevity.
+Output of `table.data()` using a table:
 
 | owner | pet  | treat   |
 | ----- | ---- | ------- |
@@ -146,9 +195,24 @@ Notice that the columns are using the custom names.
 |       |      | meat    |
 |       | frog | insects |
 
-### `Row` and `Cell`
+Notice that the columns are using the custom names.
 
-The `Row` contains the following:
+Since the column names have changed, make sure the `Schema` type gets updated accordingly:
+
+```typescript
+interface Schema {
+  // root -> owner
+  owner: User;
+  // animals -> pet
+  pet: Animal;
+  // food -> treat
+  treat: Food;
+}
+```
+
+### `Row`, `Cell`, and `RowData`
+
+Before jumping in to the `Table` object, we'll need to know what are `Row`s, `Cell`s, and `RowData`.
 
 ```typescript
 interface Row {
@@ -157,39 +221,41 @@ interface Row {
     [property]: Cell;
   };
 }
-```
 
-The `Cell` contains the following:
-
-```typescript
 interface Cell {
   data: /* cell data type */;
   group: string | number;
   span?: number;
 }
+
+type RowData<Schema> = Partial<Schema>;
 ```
 
-The `span` value pertains to the `rowspan` of a cell. It is set only for cells that span across rows.
+What do these mean?
 
-The `group` value contains a unique value which determines if `Row`s or `Cell`s are related (or are in a `group`).
+- `Row` - contains the `Cell`s.
+- `Cell` - contains the data.
+- `RowData` - the `Schema` but with partial values.
+- `span` - pertains to the `rowspan` of a `Cell`. It is set only for `Cell`s that span across `Row`s.
+- `group` - contains a unique value which determines if `Row`s or `Cell`s are related (or are in a `group`).
 
-By default, the `group` value uses the `index` of the array of `data` passed to `unnest` (if it's an object, the value is `0`). You can set your own `group` value through the `unnest` function:
+  By default, the `group` value uses the `index` of the array of `data` passed to `unnest` (if it's an object, the value is `0`).
 
-> **Tip**: In the example below, the `user.email` is set as the `group` value.
+  You can set your own `group` value through the `unnest` function:
 
-```javascript
-unnest(users, (user, index, array) => user.email).by(...)
-```
+  ```javascript
+  unnest(users, (user, index, array) => user.email).by(property);
+  ```
 
-### The `Table` Object
+  > **Tip**: The `user.email` is used as the `group` value.
+
+### `Table`
 
 Using `unnest(data).by(property)` gives you a `Table` object.
 
-The `Table` object contains the rows that have been `unnest`ed, as well as other useful methods.
+The `Table` object contains the `Row`s and `RowData` that have been `unnest`ed, as well as other useful methods.
 
-- `table.rows([group])`
-
-  Get the rows.
+- Get the rows.
 
   ```javascript
   const rows = table.rows();
@@ -198,48 +264,49 @@ The `Table` object contains the rows that have been `unnest`ed, as well as other
   const rows = table.rows(group);
   ```
 
-- `table.data()`
-
-  Get row data.
+- Get the row data.
 
   ```javascript
-  const rowData = table.data();
+  const data = table.data();
   ```
 
-- `table.roots()`
+- Transform `Row`s to `RowData`.
 
-  Get the root rows (the main object/s).
+  ```javascript
+  const data = table.data(...rows);
+  ```
+
+- Get the root rows (the main object/s or the first rows per group).
 
   ```javascript
   const rows = table.roots();
   ```
 
-- `table.column(property)`
-
-  Get all the cells in the column (property).
+- Get all the cells in the column (property).
 
   ```javascript
-  // the `treat` property from the previous example
   const cells = table.column('treat');
 
   // filter by group
   const cells = table.column('treat', group);
   ```
 
+  > **Tip**: See `treat` property from the previous example.
+
 - Get the cell info (current, previous, and next cells) at row index if any.
 
   ```javascript
-  const info = table.cell('treat', 1);
-  console.log(info);
+  const rowIndex = 1;
+  const info = table.cell('treat', rowIndex);
   ```
 
-  Output:
+  Output of `info`:
 
   ```javascript
   {
-    current: { data: 'meat', group: 0 },
-    previous: { data: 'fish', group: 0 },
-    next: { data: 'insects', group: 0 }
+    current: /* Cell */ { data: 'meat', group: 0 },
+    previous: /* Cell */ { data: 'fish', group: 0 },
+    next: /* Cell */ { data: 'insects', group: 0 }
   }
   ```
 
@@ -247,7 +314,7 @@ The `Table` object contains the rows that have been `unnest`ed, as well as other
 
   Similar to `array.filter(callback)`, but `table.filter(callback)` will return a new `Table` object with the filtered rows.
 
-  The return value of the filter callback is an object with the properties.
+  The return value of the filter callback is an object similar to the `Schema` type.
 
   ```javascript
   const filteredTable = table.filter((row, index, array) => {
@@ -264,14 +331,18 @@ The `Table` object contains the rows that have been `unnest`ed, as well as other
 
   Similar to `array.sort(compareFn)`, but only the root rows are used as the arguments for the `compareFn`.
 
+  The return value of `table.sort(compareFn)` is also a new `Table` object similar to `table.filter()`.
+
   ```javascript
   const sortedTable = table.sort((rootRowA, rootRowB) => {
-    return /* number */ -1;
+    return /* number */ 0;
   });
   const sortedRows = sortedTable.rows();
   ```
 
-  By using the root rows as the arguments to compare, the other rows of the same group do not get sorted. Only the entire group is sorted against other groups (e.g. Rows with `group` index `1` precede the rows with `group` index `0`)
+  By using the root rows as the arguments to compare, the other rows of the same group do not get sorted. Only the entire group is sorted against other groups.
+
+  e.g. After sorting, the rows with `group` index `1` precede the rows with `group` index `0`.
 
   > **Tip**: The methods `table.filter()` and `table.sort()` return a new `Table` object to allow the usage of the `Table` methods on the new filtered/sorted rows instead.
 
@@ -288,11 +359,13 @@ A `render` function is included which accepts rows and returns a Markdown table 
 const { unnest, render } = require('@arnesfield/unnest');
 // ...
 const tableStr = render(table.rows(), row => {
+  // convert to RowData so it's easier to work with
+  const [data] = table.data(row);
   // labels per column, defaults to empty string
   return {
-    owner: row.cells.owner?.data.email,
-    pet: row.cells.pet?.data.type,
-    treat: row.cells.treat?.data
+    owner: data.owner?.email,
+    pet: data.pet?.type,
+    treat: data.treat
   };
 });
 console.log(tableStr);
@@ -312,10 +385,11 @@ You can also pass in default columns to use. With this, you can reorder the colu
 
 ```javascript
 const tableStr = render(table.rows(), ['treat', 'owner', 'pet'], row => {
+  const [data] = table.data(row);
   return {
-    owner: row.cells.owner?.data.email,
-    pet: row.cells.pet?.data.type,
-    treat: row.cells.treat?.data
+    owner: data.owner?.email,
+    pet: data.pet?.type,
+    treat: data.treat
   };
 });
 console.log(tableStr);
