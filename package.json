@@ -27,14 +27,17 @@
   },
   "license": "MIT",
   "author": "Jefferson Rylee <rylee.jeff385@gmail.com>",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "sideEffects": false,
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "browser": "lib/index.umd.js",
+  "types": "lib/types/index.d.ts",
   "files": [
     "lib"
   ],
   "scripts": {
     "prebuild": "rimraf lib",
-    "build": "tsc",
+    "build": "tsc --build tsconfig.lib.json && rollup -c",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "npm run lint -- --fix",
     "start": "npm run build -- -w",

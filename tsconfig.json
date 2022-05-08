@@ -1,16 +1,13 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
     "target": "ES6",
-    "outDir": "lib",
     "lib": ["ES2017"],
     "strict": true,
     "sourceMap": true,
-    "declaration": true,
     "noImplicitAny": true,
     "removeComments": false,
-    "esModuleInterop": true,
-    "preserveConstEnums": true
+    "preserveConstEnums": true,
+    "moduleResolution": "node"
   },
   "include": ["**/*", "src/**/*"],
   "exclude": ["node_modules", "lib", "tmp", "**/*.spec.ts"]
