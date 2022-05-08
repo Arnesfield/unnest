@@ -35,7 +35,7 @@ export interface Table<T extends Record<string, any>> {
    */
   data(...rows: Row<T>[]): RowData<T>[];
   /**
-   * Get the root rows.
+   * Get the root rows (the main object/s or the first rows per group).
    * @returns The root rows.
    */
   roots(): Row<T>[];
