@@ -25,6 +25,4 @@ export interface Row<T extends Record<string, any>> {
 }
 
 /** The row data. */
-export type RowData<T extends Record<string, any>> = {
-  [K in keyof T]?: T[K];
-};
+export type RowData<T extends Record<string, any>> = Partial<T>;
