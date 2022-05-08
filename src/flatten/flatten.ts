@@ -76,6 +76,8 @@ export function flatten<
     if (rows.length === 0) {
       rows.push({});
     }
+    // ensure that property is the first key and doesn't get overridden
+    rows[0] = { [property.name]: data, ...rows[0] };
     rows[0][property.name as K] = data as T[K];
     // get keys
     const set = new Set<string>();
