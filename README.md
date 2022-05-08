@@ -192,10 +192,18 @@ The `Table` object contains the rows that have been `unnest`ed, as well as other
   Get the rows.
 
   ```javascript
-  // all rows
   const rows = table.rows();
-  // get and filter rows by `group` value
-  const rowsOfGroup = table.rows(group);
+
+  // filter by group
+  const rows = table.rows(group);
+  ```
+
+- `table.data()`
+
+  Get row data.
+
+  ```javascript
+  const rowData = table.data();
   ```
 
 - `table.roots()`
@@ -212,12 +220,13 @@ The `Table` object contains the rows that have been `unnest`ed, as well as other
 
   ```javascript
   // the `treat` property from the previous example
-  const treatCells = table.column('treat');
+  const cells = table.column('treat');
+
+  // filter by group
+  const cells = table.column('treat', group);
   ```
 
-- `table.cell(property, rowIndex)`
-
-  Get the cell info (current, previous, and next cells) at row index if any.
+- Get the cell info (current, previous, and next cells) at row index if any.
 
   ```javascript
   const info = table.cell('treat', 1);
