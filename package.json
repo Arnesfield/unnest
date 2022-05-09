@@ -1,6 +1,6 @@
 {
   "name": "@arnesfield/unnest",
-  "version": "0.0.1",
+  "version": "0.0.2-alpha.1",
   "description": "Flatten nested objects to table rows.",
   "keywords": [
     "unnest",
