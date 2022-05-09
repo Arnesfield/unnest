@@ -12,6 +12,10 @@ export function createTable<T extends Record<string, any>>(
 ): Table<T> {
   let spannedRows: Row<T>[] | undefined;
 
+  const tableUpdateSpans: Table<T>['updateSpans'] = () => {
+    spannedRows = updateSpans(spannedRows || rows);
+  };
+
   const getRows: Table<T>['rows'] = group => {
     if (!spannedRows) {
       spannedRows = updateSpans(rows);
@@ -118,7 +122,16 @@ export function createTable<T extends Record<string, any>>(
   const table = {} as Table<T>;
   Object.defineProperties(
     table,
-    createProperties({ rows: getRows, data, roots, column, cell, filter, sort })
+    createProperties({
+      rows: getRows,
+      data,
+      roots,
+      column,
+      cell,
+      filter,
+      sort,
+      updateSpans: tableUpdateSpans
+    })
   );
   return table;
 }

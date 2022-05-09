@@ -84,4 +84,9 @@ export interface Table<T extends Record<string, any>> {
    * @returns The table with the sorted rows.
    */
   sort(compare: (a: Row<T>, b: Row<T>) => number): Table<T>;
+  /**
+   * Update row cell `span` values. This will change
+   * the `rows` array, `row`, and `cell` references.
+   */
+  updateSpans(): void;
 }
