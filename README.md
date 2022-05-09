@@ -12,7 +12,7 @@ const rows = table.rows();
 const data = table.data();
 ```
 
-Using `TypeScript`:
+Using [TypeScript](https://www.typescriptlang.org/):
 
 ```typescript
 const table: Table<Schema> = unnest(items).by<Schema>(property);
@@ -24,6 +24,26 @@ const table: Table<Schema> = unnest(items).by<Schema>(property);
 
 ```sh
 npm install @arnesfield/unnest
+```
+
+Use the module:
+
+```javascript
+// ES6
+import unnest from '@arnesfield/unnest';
+
+// CommonJS
+const { unnest } = require('@arnesfield/unnest');
+```
+
+Use the [UMD](https://github.com/umdjs/umd) build:
+
+```html
+<script src="https://unpkg.com/@arnesfield/unnest/lib/index.umd.js"></script>
+```
+
+```javascript
+const table = window.unnest(data).by(property);
 ```
 
 ## Usage
@@ -82,7 +102,7 @@ Using a table, the result would look something like this:
 |      |         | meat    |
 |      | frog    | insects |
 
-If you're using `TypeScript`, the `Schema` type (similar to `RowData`) would look something like this:
+If you're using [TypeScript](https://www.typescriptlang.org/), the `Schema` type (similar to `RowData`) would look something like this:
 
 ```typescript
 interface Schema {
@@ -90,6 +110,8 @@ interface Schema {
   animals: Animal;
   food: Food;
 }
+
+const table = unnest(user).by<Schema>(property);
 ```
 
 ### `unnest` function and `Property`
@@ -136,7 +158,7 @@ interface User {
 
 The `property` value type may look like the following depending on how you want to `unnest` the object:
 
-```javascript
+```typescript
 {
   // name: string,
   email: PropertyValue,
@@ -349,6 +371,85 @@ The `Table` object contains the `Row`s and `RowData` that have been `unnest`ed, 
 
   > **Tip**: The methods `table.filter()` and `table.sort()` return a new `Table` object to allow the usage of the `Table` methods on the new filtered/sorted rows instead.
 
+- Update `Cell` span values.
+
+  ```javascript
+  table.updateSpans();
+  ```
+
+  Note that this will change the `rows` array, `row`, and `cell` references.
+
+### Merging Columns
+
+There may be cases where the nested object would require its properties to be in one column.
+
+This is already handled by `unnest` by placing the incoming cells last.
+
+Consider this nested object:
+
+```javascript
+const user = {
+  email: 'john.doe@foo.bar',
+  animals: [
+    { type: 'cat', food: ['fish', 'meat'] },
+    { type: 'frog', food: ['insects'] }
+  ],
+  food: ['chicken', 'beef']
+};
+```
+
+Notice that there is `food` property for `animals` and the `user` object itself. Let's try to `unnest` this object:
+
+```javascript
+const table = unnest(user).by({
+  animals: {
+    food: true
+  },
+  food: true
+});
+```
+
+Output of `table.data()` using a table:
+
+| root | animals | food    |
+| ---- | ------- | ------- |
+| user | cat     | fish    |
+|      |         | meat    |
+|      | frog    | insects |
+|      |         | chicken |
+|      |         | beef    |
+
+The `user.food` values (`chicken` and `beef`) come after the previous rows.
+
+This merge feature should work in most cases as long as the property values are arranged in a way that works for you.
+
+> **Tip**: You can use a different column name for duplicating property names so they show up in a different column.
+
+### Special Cases
+
+If the resulting output does not satisfy your needs, then you are free to directly mutate the `rows` array of `table`.
+
+```javascript
+const rows = table.rows();
+
+// mutate `rows` array directly, some examples:
+rows.pop();
+rows.push(row);
+rows.sort(sortFn);
+rows.splice(spliceFn);
+
+// update cell span values
+table.updateSpans();
+```
+
+Note that `rows` (also `row`s and `cell`s) will have a different reference after calling `table.updateSpans()`.
+
+```javascript
+rows === table.rows(); // false
+```
+
+This method will allow you to merge 2 or more `table.rows()`. Directly updating `rows` means you would have to take note of the `group` value uniqueness.
+
 ### `render` function
 
 ```javascript
@@ -407,3 +508,7 @@ Output:
 | meat    |                  |      |
 | insects |                  | frog |
 ```
+
+## License
+
+Licensed under the [MIT License](LICENSE).
