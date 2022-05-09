@@ -289,6 +289,9 @@ The `Table` object contains the `Row`s and `RowData` that have been `unnest`ed, 
 
   // filter by group
   const cells = table.column('treat', group);
+
+  // set `includeEmpty` to `true` to include `undefined` cells
+  const cells = table.column('treat', group, true);
   ```
 
   > **Tip**: See `treat` property from the previous example.
