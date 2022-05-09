@@ -44,15 +44,21 @@ export function createTable<T extends Record<string, any>>(
 
   const column: Table<T>['column'] = <P extends keyof T>(
     property: P,
-    group?: string | number
+    group?: string | number,
+    includeEmpty = false
   ) => {
-    return getRows().reduce((cells: Cell<T[P]>[], row) => {
+    const cells = getRows().reduce((cells: (Cell<T[P]> | undefined)[], row) => {
       const cell = row.cells[property];
-      if (cell && (typeof group === 'undefined' || cell.group === group)) {
+      if (
+        cell
+          ? typeof group === 'undefined' || cell.group === group
+          : includeEmpty
+      ) {
         cells.push(cell);
       }
       return cells;
     }, []);
+    return cells as Cell<T[P]>[];
   };
 
   const cell: Table<T>['cell'] = <P extends keyof T>(
