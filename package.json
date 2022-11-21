@@ -28,25 +28,32 @@
   "license": "MIT",
   "author": "Jefferson Rylee <rylee.jeff385@gmail.com>",
   "sideEffects": false,
+  "type": "module",
   "exports": {
-    "import": "./lib/esm/index.js",
-    "require": "./lib/cjs/index.js",
-    "default": "./lib/esm/index.js"
+    "import": "./lib/index.mjs",
+    "require": "./lib/index.cjs",
+    "default": "./lib/index.mjs"
   },
-  "main": "lib/cjs/index.js",
-  "module": "lib/esm/index.js",
-  "browser": "lib/index.umd.js",
-  "types": "lib/types/index.d.ts",
+  "main": "lib/index.cjs",
+  "jsdelivr": "lib/index.umd.min.js",
+  "unpkg": "lib/index.umd.min.js",
+  "module": "lib/index.mjs",
+  "types": "lib/index.d.ts",
   "files": [
     "lib"
   ],
   "scripts": {
     "prebuild": "rimraf lib",
-    "build": "tsc --build tsconfig.lib.json && rollup -c",
+    "build": "node scripts/build",
+    "check": "concurrently -r --kill-others-on-fail npm:lint:strict \"tsc --noEmit\"",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "npm run lint -- --fix",
+    "lint:strict": "npm run lint -- --max-warnings 0",
     "start": "npm run build -- -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:prod": "npm run build -- -w -p",
+    "test": "concurrently -r --kill-others-on-fail npm:test:mocha npm:check",
+    "test:mocha": "mocha -r esbuild-runner/register **/*.spec.ts",
+    "test:watch": "npm run test:mocha -- --watch --watch-files src"
   },
   "devDependencies": {
     "@rollup/plugin-eslint": "^9.0.1",
