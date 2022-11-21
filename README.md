@@ -1,5 +1,8 @@
 # unnest
 
+[![npm](https://img.shields.io/npm/v/@arnesfield/unnest.svg)](https://www.npmjs.com/package/@arnesfield/unnest)
+[![Node.js CI](https://github.com/Arnesfield/unnest/workflows/Node.js%20CI/badge.svg)](https://github.com/Arnesfield/unnest/actions?query=workflow%3A"Node.js+CI")
+
 Flatten nested objects to table rows.
 
 ```javascript
@@ -39,7 +42,7 @@ const { unnest } = require('@arnesfield/unnest');
 Use the [UMD](https://github.com/umdjs/umd) build:
 
 ```html
-<script src="https://unpkg.com/@arnesfield/unnest/lib/index.umd.js"></script>
+<script src="https://unpkg.com/@arnesfield/unnest/lib/index.umd.min.js"></script>
 ```
 
 ```javascript
