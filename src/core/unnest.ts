@@ -1,7 +1,7 @@
 import { Cell, Row, RowData } from '../common.types';
 import { flatten } from '../flatten';
 import { createTable, Table } from '../table';
-import { createProperties } from '../utils';
+import { defineProperties } from '../utils/defineProperties';
 import { transformProperty } from './transformProperty';
 import { PropertyOptions, Unnest } from './unnest.types';
 
@@ -53,6 +53,6 @@ export function unnest<Data extends Record<string, any>>(
   };
 
   const unnest = {} as Unnest<Data>;
-  Object.defineProperties(unnest, createProperties({ by }));
+  defineProperties(unnest, { by });
   return unnest;
 }

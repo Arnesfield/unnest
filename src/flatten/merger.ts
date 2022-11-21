@@ -1,5 +1,5 @@
 import { RowData } from '../common.types';
-import { createProperties } from '../utils';
+import { defineProperties } from '../utils/defineProperties';
 
 function filterProps<T extends Record<string, any>>(
   object: T,
@@ -66,6 +66,6 @@ export function createMerger<T extends Record<string, any>>(): Merger<T> {
   };
 
   const merger = {} as Merger<T>;
-  Object.defineProperties(merger, createProperties({ merge, conflicts }));
+  defineProperties(merger, { merge, conflicts });
   return merger;
 }

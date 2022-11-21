@@ -1,2 +1,2 @@
-export * from './createProperties';
+export * from './defineProperties';
 export * from './render';

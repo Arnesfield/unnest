@@ -1,5 +1,5 @@
 import { Cell, Row, RowData } from '../common.types';
-import { createProperties } from '../utils';
+import { defineProperties } from '../utils/defineProperties';
 import { Table, CellInfo } from './table.types';
 import { updateSpans } from './updateSpans';
 
@@ -120,18 +120,15 @@ export function createTable<T extends Record<string, any>>(
   };
 
   const table = {} as Table<T>;
-  Object.defineProperties(
-    table,
-    createProperties({
-      rows: getRows,
-      data,
-      roots,
-      column,
-      cell,
-      filter,
-      sort,
-      updateSpans: tableUpdateSpans
-    })
-  );
+  defineProperties(table, {
+    rows: getRows,
+    data,
+    roots,
+    column,
+    cell,
+    filter,
+    sort,
+    updateSpans: tableUpdateSpans
+  });
   return table;
 }
